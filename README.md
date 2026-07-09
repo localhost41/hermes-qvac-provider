@@ -16,11 +16,14 @@ that require a value. Local QVAC servers may ignore it.
 
 ```ts
 import {
+  assertQvacServerReachable,
   createHermesQvacProvider,
   hermesQvacProvider,
 } from "@localhostlabs/hermes-qvac-provider";
 
 const provider = hermesQvacProvider;
+
+await assertQvacServerReachable();
 
 const customProvider = createHermesQvacProvider({
   baseURL: "http://127.0.0.1:8000/v1",
@@ -32,6 +35,11 @@ const customProvider = createHermesQvacProvider({
 `createHermesQvacProvider()` returns a small provider descriptor with an
 `openai` config block that can be passed to Hermes integration code expecting an
 OpenAI-compatible provider.
+
+`assertQvacServerReachable()` checks whether the configured local QVAC endpoint
+responds before integration code tries to use it. If the server is unavailable,
+it throws a clear error telling the developer to start QVAC or pass a different
+`baseURL`. This package does not install or start QVAC automatically.
 
 ## Local development
 
