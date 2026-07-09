@@ -12,9 +12,10 @@
     }
   },
   "sideEffects": false,
-  "files": ["dist", "README.md", "CHANGELOG.md"],
+  "files": ["dist", "examples", "README.md", "CHANGELOG.md"],
   "scripts": {
     "build": "tsc -p tsconfig.json",
+    "demo": "pnpm build && node examples/hermes-qvac-demo.mjs",
     "test": "vitest run",
     "lint": "tsc -p tsconfig.json --noEmit"
   },
