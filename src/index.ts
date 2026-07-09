@@ -1,6 +1,7 @@
-export const DEFAULT_QVAC_OPENAI_BASE_URL = "http://localhost:8000/v1";
-export const DEFAULT_QVAC_API_KEY = "qvac-local";
-export const DEFAULT_QVAC_MODEL = "qvac-default";
+export const DEFAULT_QVAC_OPENAI_BASE_URL = "http://127.0.0.1:11434/v1";
+export const DEFAULT_QVAC_MODELS_URL = "http://127.0.0.1:11434/v1/models";
+export const DEFAULT_QVAC_API_KEY = "custom-local";
+export const DEFAULT_QVAC_MODEL = "qwen3.5-9b";
 export const DEFAULT_QVAC_SERVER_TIMEOUT_MS = 2_000;
 
 export type HermesQvacProviderProtocol = "openai-compatible";
@@ -15,18 +16,51 @@ export interface HermesQvacModelCatalogEntry {
 export const DEFAULT_QVAC_MODEL_CATALOG: HermesQvacModelCatalogEntry[] = [
   {
     id: DEFAULT_QVAC_MODEL,
-    name: "QVAC Default",
-    description: "General-purpose local QVAC model for development and smoke tests.",
+    name: "Qwen 3.5 9B",
+    description: "Recommended local QVAC model for Hermes agent workflows.",
+    contextWindowTokens: 32768,
   },
   {
-    id: "qvac-small",
-    name: "QVAC Small",
-    description: "Lightweight local QVAC model for fast iteration.",
+    id: "qwen3.5-4b",
+    name: "Qwen 3.5 4B",
+    description: "Smaller local QVAC model for direct prompts and lighter workflows.",
+    contextWindowTokens: 32768,
   },
   {
-    id: "qvac-coder",
-    name: "QVAC Coder",
-    description: "Code-oriented local QVAC model for developer workflows.",
+    id: "qwen3.5-2b",
+    name: "Qwen 3.5 2B",
+    description: "Fast local QVAC model for lightweight prompts.",
+    contextWindowTokens: 32768,
+  },
+  {
+    id: "qwen3.5-0.8b",
+    name: "Qwen 3.5 0.8B",
+    description: "Smallest friendly local QVAC model option.",
+    contextWindowTokens: 32768,
+  },
+  {
+    id: "qwen3.6-27b",
+    name: "Qwen 3.6 27B",
+    description: "Larger local QVAC model option for higher-quality responses.",
+    contextWindowTokens: 32768,
+  },
+  {
+    id: "qwen3.6-35b-a3b",
+    name: "Qwen 3.6 35B A3B",
+    description: "Large local QVAC model option.",
+    contextWindowTokens: 32768,
+  },
+  {
+    id: "gpt-oss-20b",
+    name: "GPT OSS 20B",
+    description: "Local GPT OSS model exposed by QVAC.",
+    contextWindowTokens: 32768,
+  },
+  {
+    id: "gemma4-31b",
+    name: "Gemma 4 31B",
+    description: "Local Gemma model exposed by QVAC.",
+    contextWindowTokens: 32768,
   },
 ];
 
@@ -156,6 +190,7 @@ export async function detectQvacServer(
   options: QvacServerDetectionOptions = {},
 ): Promise<QvacServerDetectionResult> {
   const baseURL = options.baseURL ?? DEFAULT_QVAC_OPENAI_BASE_URL;
+  const modelsURL = `${baseURL.replace(/\/$/, "")}/models`;
   const timeoutMs = options.timeoutMs ?? DEFAULT_QVAC_SERVER_TIMEOUT_MS;
   const fetchImpl = options.fetch ?? globalThis.fetch;
 
@@ -172,7 +207,7 @@ export async function detectQvacServer(
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
-    const response = await fetchImpl(baseURL, {
+    const response = await fetchImpl(modelsURL, {
       method: "GET",
       headers: { accept: "application/json" },
       signal: controller.signal,

@@ -1,0 +1,52 @@
+id: qvac
+name: qvac
+display_name: QVAC
+version: 0.1.0
+type: model-provider
+entrypoint: qvac_provider
+description: Local-first QVAC models via qvac serve openai
+provider:
+  name: qvac
+  aliases:
+    - local-qvac
+    - qvac-local
+  api_mode: chat_completions
+  auth_type: api_key
+  base_url: http://127.0.0.1:11434/v1
+  models_url: http://127.0.0.1:11434/v1/models
+  env_vars:
+    - QVAC_API_KEY
+    - QVAC_BASE_URL
+  default_model: qwen3.5-9b
+  default_aux_model: qwen3.5-2b
+  default_max_tokens: 8192
+  context_window: 32768
+  cost: 0
+config:
+  model:
+    default: qwen3.5-9b
+  host:
+    default: 127.0.0.1
+  port:
+    default: 11434
+  baseUrl:
+    default: http://127.0.0.1:11434/v1
+  apiKey:
+    env: QVAC_API_KEY
+    default: custom-local
+  qvacCommand:
+    default: qvac serve openai
+  cwd:
+    default: ""
+  ctxSize:
+    default: 32768
+  reasoningBudget:
+    default: null
+  tools:
+    default: true
+  readyTimeoutMs:
+    default: 30000
+  idleStopMs:
+    default: 0
+  timeoutSeconds:
+    default: 120

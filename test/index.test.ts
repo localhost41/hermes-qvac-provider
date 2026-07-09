@@ -3,6 +3,7 @@ import {
   DEFAULT_QVAC_API_KEY,
   DEFAULT_QVAC_MODEL,
   DEFAULT_QVAC_MODEL_CATALOG,
+  DEFAULT_QVAC_MODELS_URL,
   DEFAULT_QVAC_OPENAI_BASE_URL,
   assertQvacServerReachable,
   createHermesQvacProvider,
@@ -111,12 +112,12 @@ describe("detectQvacServer", () => {
 
     await expect(
       detectQvacServer({
-        baseURL: "http://127.0.0.1:8000/v1",
+        baseURL: "http://127.0.0.1:11434/v1",
         fetch: fetchMock,
       }),
     ).resolves.toEqual({
       reachable: true,
-      baseURL: "http://127.0.0.1:8000/v1",
+      baseURL: "http://127.0.0.1:11434/v1",
       status: 404,
     });
   });
@@ -129,14 +130,14 @@ describe("detectQvacServer", () => {
 
     await expect(
       detectQvacServer({
-        baseURL: "http://127.0.0.1:8000/v1",
+        baseURL: "http://127.0.0.1:11434/v1",
         fetch: fetchMock,
       }),
     ).resolves.toEqual({
       reachable: false,
-      baseURL: "http://127.0.0.1:8000/v1",
+      baseURL: "http://127.0.0.1:11434/v1",
       errorMessage:
-        "QVAC local server is not reachable at http://127.0.0.1:8000/v1. Start the QVAC local server, or pass a different baseURL if it is running elsewhere. This package does not install or start QVAC automatically.",
+        "QVAC local server is not reachable at http://127.0.0.1:11434/v1. Start the QVAC local server, or pass a different baseURL if it is running elsewhere. This package does not install or start QVAC automatically.",
       cause: failure,
     });
   });
@@ -148,9 +149,22 @@ describe("detectQvacServer", () => {
 
     await expect(
       assertQvacServerReachable({
-        baseURL: "http://127.0.0.1:8000/v1",
+        baseURL: "http://127.0.0.1:11434/v1",
         fetch: fetchMock,
       }),
-    ).rejects.toThrow(createQvacServerUnavailableMessage("http://127.0.0.1:8000/v1"));
+    ).rejects.toThrow(createQvacServerUnavailableMessage("http://127.0.0.1:11434/v1"));
+  });
+
+  it("uses the OpenAI-compatible models endpoint as the health check", async () => {
+    let requestedURL = "";
+    const fetchMock = async (url: string | URL | Request) => {
+      requestedURL = String(url);
+      return new Response("{}", { status: 200 });
+    };
+
+    await detectQvacServer({ fetch: fetchMock });
+
+    expect(DEFAULT_QVAC_MODELS_URL).toBe("http://127.0.0.1:11434/v1/models");
+    expect(requestedURL).toBe(DEFAULT_QVAC_MODELS_URL);
   });
 });

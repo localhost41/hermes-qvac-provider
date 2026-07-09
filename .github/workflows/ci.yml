@@ -25,4 +25,5 @@ jobs:
           fi
       - run: pnpm lint
       - run: pnpm test
+      - run: pnpm test:python
       - run: pnpm build
