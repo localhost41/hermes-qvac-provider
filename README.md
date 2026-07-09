@@ -132,6 +132,25 @@ the configured OpenAI-compatible endpoint. The default selected model is
 `qvac-default`; override `model` and `models` if your local QVAC server exposes
 different model identifiers.
 
+## Demo
+
+This repo includes a small registry example that prints a Hermes provider list
+containing the QVAC provider:
+
+```bash
+pnpm demo
+```
+
+Pass `--check` to also verify that the configured local QVAC server is
+reachable:
+
+```bash
+QVAC_BASE_URL=http://localhost:8000/v1 pnpm demo -- --check
+```
+
+The demo uses `QVAC_BASE_URL`, `QVAC_API_KEY`, and `QVAC_MODEL` when those
+environment variables are set. It does not install or start QVAC.
+
 ## Troubleshooting
 
 - `QVAC local server is not reachable`: Start the QVAC server, confirm it is
