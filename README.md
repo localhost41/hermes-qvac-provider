@@ -3,6 +3,18 @@
 Minimal TypeScript provider package for connecting Hermes to a local QVAC
 OpenAI-compatible endpoint.
 
+## Install
+
+Install the provider in the Hermes integration project that will connect to
+QVAC:
+
+```bash
+pnpm add @localhostlabs/hermes-qvac-provider
+```
+
+This package only provides the Hermes provider descriptor. It does not install
+Hermes or start a QVAC server.
+
 ## Defaults
 
 - Endpoint: `http://localhost:8000/v1`
@@ -27,7 +39,10 @@ standard streaming request option to QVAC. This package does not emulate
 streaming on its own; if a Hermes path or local QVAC server does not support
 streaming responses, pass `streaming: false` when creating the provider.
 
-## Usage
+## Configure the provider
+
+Use the default provider when your local QVAC server exposes an
+OpenAI-compatible API at `http://localhost:8000/v1`:
 
 ```ts
 import {
@@ -39,6 +54,13 @@ import {
 const provider = hermesQvacProvider;
 
 await assertQvacServerReachable();
+```
+
+Create a custom provider when QVAC is running on a different endpoint, uses a
+different local key, or exposes a different model catalog:
+
+```ts
+import { createHermesQvacProvider } from "@localhostlabs/hermes-qvac-provider";
 
 const customProvider = createHermesQvacProvider({
   baseURL: "http://127.0.0.1:8000/v1",
@@ -71,10 +93,67 @@ responds before integration code tries to use it. If the server is unavailable,
 it throws a clear error telling the developer to start QVAC or pass a different
 `baseURL`. This package does not install or start QVAC automatically.
 
+## Run QVAC locally
+
+Start your QVAC server separately before selecting the provider in Hermes. The
+server should expose an OpenAI-compatible API and accept requests at the
+provider `baseURL`.
+
+The default provider expects:
+
+```text
+http://localhost:8000/v1
+```
+
+If your QVAC server runs elsewhere, configure `baseURL` with the full
+OpenAI-compatible `/v1` URL. If your local server requires an API key, pass it
+with `apiKey`; otherwise the default `qvac-local` placeholder is used for
+clients that require a value.
+
+You can check reachability from integration code before wiring the provider into
+Hermes:
+
+```ts
+import { assertQvacServerReachable } from "@localhostlabs/hermes-qvac-provider";
+
+await assertQvacServerReachable({
+  baseURL: "http://localhost:8000/v1",
+});
+```
+
+## Select QVAC in Hermes
+
+Register the provider descriptor with the Hermes provider list using the same
+path your Hermes integration uses for other OpenAI-compatible providers, then
+select `QVAC Local` from the provider picker.
+
+Hermes should request the provider by `id: "qvac"` and send model requests to
+the configured OpenAI-compatible endpoint. The default selected model is
+`qvac-default`; override `model` and `models` if your local QVAC server exposes
+different model identifiers.
+
+## Troubleshooting
+
+- `QVAC local server is not reachable`: Start the QVAC server, confirm it is
+  listening on the configured host and port, and make sure `baseURL` includes
+  the OpenAI-compatible `/v1` path.
+- Connection succeeds but model calls fail: Check that the selected Hermes model
+  exists in your local QVAC server and update `model` or `models` to match.
+- Authentication errors: Pass the local key expected by your QVAC server with
+  `apiKey`. For local servers that ignore keys, the default `qvac-local`
+  placeholder is usually enough.
+- Streaming fails or responses hang: Create the provider with
+  `streaming: false` if your Hermes path or QVAC server does not support
+  streaming OpenAI-compatible responses.
+- Hermes does not show QVAC: Confirm the descriptor returned by
+  `createHermesQvacProvider()` or `hermesQvacProvider` is included in the Hermes
+  provider registry and that the UI is selecting provider `id: "qvac"`.
+
 ## Local development
 
 ```bash
 pnpm install
+pnpm lint
 pnpm test
 pnpm build
 ```
