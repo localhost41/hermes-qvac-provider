@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Document that Hermes currently has no clean model-provider-local service
+  lifecycle hook, so QVAC startup remains manual for v0.2.
+- Add lifecycle limitation metadata and tests for the preserved QVAC lifecycle
+  config defaults.
+
 ## v0.1.0-alpha.1
 
 - Initial repository scaffold.

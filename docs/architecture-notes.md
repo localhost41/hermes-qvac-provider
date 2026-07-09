@@ -66,12 +66,35 @@ default for agent workflows.
 
 ## Lifecycle Decision
 
-v0.1 does not implement managed lifecycle. Users should run:
+v0.2 keeps manual lifecycle as the supported path. Users should run:
 
 ```bash
 ./scripts/start-qvac.sh
 ```
 
-in one terminal and run Hermes in another. Managed lifecycle should be added in
-v0.2 only if Hermes exposes a clean hook for starting and stopping
-provider-local services.
+in one terminal and run Hermes in another.
+
+Research against the current Hermes install showed that model-provider plugins
+are discovered by `providers/__init__.py` and register declarative
+`ProviderProfile` objects. `ProviderProfile` exposes request/catalog hooks such
+as `prepare_messages`, `build_extra_body`, `build_api_kwargs_extras`, and
+`fetch_models`. It does not expose a provider-local service hook for starting or
+stopping a server.
+
+Hermes' general plugin manager has session lifecycle hooks, but the Hermes docs
+state that model-provider plugins are recorded by the general manager and not
+imported there, because provider discovery is owned by `providers/__init__.py`.
+Using those general hooks for QVAC would require a second plugin surface and
+would not be a clean model-provider-local lifecycle contract.
+
+The provider metadata therefore marks managed lifecycle unsupported and records
+the intended future defaults only:
+
+- Command: `qvac serve openai --host 127.0.0.1 --port 11434`
+- Config keys: `qvacCommand`, `cwd`, `readyTimeoutMs`, `idleStopMs`,
+  `timeoutSeconds`
+- Readiness check: `/v1/models`
+
+If Hermes later adds a provider-local service hook, managed startup can be
+implemented against those defaults without changing the user-facing
+configuration names.
