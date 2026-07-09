@@ -16,7 +16,15 @@ const provider = createHermesQvacProvider({
   model,
 });
 
-const hermesProviders = [provider];
+const printableProvider = {
+  ...provider,
+  openai: {
+    ...provider.openai,
+    apiKey: provider.openai.apiKey ? "[redacted]" : provider.openai.apiKey,
+  },
+};
+
+const hermesProviders = [printableProvider];
 
 console.log("Hermes provider registry example:");
 console.log(JSON.stringify(hermesProviders, null, 2));
