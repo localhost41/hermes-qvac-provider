@@ -17,6 +17,7 @@
     "build": "tsc -p tsconfig.json",
     "demo": "pnpm build && node examples/hermes-qvac-demo.mjs",
     "test": "vitest run",
+    "test:python": "python3 -m unittest discover -s tests -p 'test_*.py'",
     "lint": "tsc -p tsconfig.json --noEmit"
   },
   "devDependencies": {
