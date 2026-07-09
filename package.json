@@ -1,6 +1,6 @@
 {
   "name": "@localhostlabs/hermes-qvac-provider",
-  "version": "0.1.0-alpha.0",
+  "version": "0.1.0-alpha.1",
   "description": "QVAC developer tooling package: hermes-qvac-provider",
   "type": "module",
   "main": "dist/index.js",
@@ -12,9 +12,19 @@
     }
   },
   "sideEffects": false,
-  "files": ["dist", "examples", "README.md", "CHANGELOG.md"],
+  "files": [
+    "dist",
+    "docs",
+    "examples",
+    "qvac_provider",
+    "scripts",
+    "plugin.yaml",
+    "README.md",
+    "CHANGELOG.md"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
+    "prepack": "npm run build",
     "demo": "pnpm build && node examples/hermes-qvac-demo.mjs",
     "test": "vitest run",
     "test:python": "python3 -m unittest discover -s tests -p 'test_*.py'",

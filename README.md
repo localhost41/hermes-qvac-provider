@@ -14,7 +14,7 @@ targets Hermes Agent's Python model-provider plugin system.
 
 ## v0.1 Scope
 
-This release provides a working Hermes provider entry for QVAC. It does not
+This alpha release provides a working Hermes provider entry for QVAC. It does not
 manage the QVAC server lifecycle yet. Run QVAC in one terminal and Hermes in
 another.
 
@@ -165,3 +165,17 @@ pnpm test
 pnpm build
 python3 -m unittest discover -s tests -p 'test_*.py'
 ```
+
+## Alpha Release Readiness
+
+- Package version: `0.1.0-alpha.1`
+- Plugin metadata version: `0.1.0-alpha.1`
+- Packaged assets include `dist`, `docs`, `examples`, `qvac_provider`, `scripts`,
+  `plugin.yaml`, `README.md`, and `CHANGELOG.md`.
+- Verify the package contents without publishing:
+
+```bash
+npm pack --dry-run
+```
+
+This repository does not publish a stable release as part of alpha prep.
