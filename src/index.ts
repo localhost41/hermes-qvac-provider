@@ -52,6 +52,11 @@ export interface HermesQvacProviderOptions {
    * Optional headers forwarded to the underlying OpenAI-compatible client.
    */
   headers?: Record<string, string>;
+  /**
+   * Whether Hermes should treat this provider as streaming-capable. Defaults to
+   * true because the QVAC provider uses an OpenAI-compatible path.
+   */
+  streaming?: boolean;
 }
 
 export interface HermesQvacOpenAIConfig {
@@ -60,12 +65,21 @@ export interface HermesQvacOpenAIConfig {
   defaultHeaders?: Record<string, string>;
 }
 
+export interface HermesQvacProviderCapabilities {
+  /**
+   * QVAC is exposed through an OpenAI-compatible provider path, where streaming
+   * is requested by Hermes with the standard stream option.
+   */
+  streaming: boolean;
+}
+
 export interface HermesQvacProvider {
   id: "qvac";
   name: "QVAC Local";
   protocol: HermesQvacProviderProtocol;
   defaultModel: string;
   models: HermesQvacModelCatalogEntry[];
+  capabilities: HermesQvacProviderCapabilities;
   openai: HermesQvacOpenAIConfig;
 }
 
@@ -125,6 +139,9 @@ export function createHermesQvacProvider(
     protocol: "openai-compatible",
     defaultModel: options.model ?? models[0]?.id ?? DEFAULT_QVAC_MODEL,
     models,
+    capabilities: {
+      streaming: options.streaming ?? true,
+    },
     openai: createQvacOpenAIConfig(options),
   };
 }

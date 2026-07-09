@@ -43,6 +43,9 @@ describe("createHermesQvacProvider", () => {
       protocol: "openai-compatible",
       defaultModel: DEFAULT_QVAC_MODEL,
       models: DEFAULT_QVAC_MODEL_CATALOG,
+      capabilities: {
+        streaming: true,
+      },
       openai: {
         baseURL: DEFAULT_QVAC_OPENAI_BASE_URL,
         apiKey: DEFAULT_QVAC_API_KEY,
@@ -66,6 +69,9 @@ describe("createHermesQvacProvider", () => {
       protocol: "openai-compatible",
       defaultModel: "custom-local",
       models,
+      capabilities: {
+        streaming: true,
+      },
       openai: {
         baseURL: DEFAULT_QVAC_OPENAI_BASE_URL,
         apiKey: DEFAULT_QVAC_API_KEY,
@@ -86,6 +92,12 @@ describe("createHermesQvacProvider", () => {
         ],
       }).defaultModel,
     ).toBe("custom-selected");
+  });
+
+  it("allows streaming support to be disabled for non-streaming QVAC paths", () => {
+    expect(createHermesQvacProvider({ streaming: false }).capabilities).toEqual({
+      streaming: false,
+    });
   });
 
   it("exports a ready-to-use default provider", () => {
