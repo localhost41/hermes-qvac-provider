@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   DEFAULT_QVAC_API_KEY,
   DEFAULT_QVAC_MODEL,
+  DEFAULT_QVAC_MODEL_CATALOG,
   DEFAULT_QVAC_OPENAI_BASE_URL,
   assertQvacServerReachable,
   createHermesQvacProvider,
@@ -41,11 +42,50 @@ describe("createHermesQvacProvider", () => {
       name: "QVAC Local",
       protocol: "openai-compatible",
       defaultModel: DEFAULT_QVAC_MODEL,
+      models: DEFAULT_QVAC_MODEL_CATALOG,
       openai: {
         baseURL: DEFAULT_QVAC_OPENAI_BASE_URL,
         apiKey: DEFAULT_QVAC_API_KEY,
       },
     });
+  });
+
+  it("allows the curated model catalog to be overridden", () => {
+    const models = [
+      {
+        id: "custom-local",
+        name: "Custom Local",
+        description: "User-provided QVAC-compatible model.",
+        contextWindowTokens: 8192,
+      },
+    ];
+
+    expect(createHermesQvacProvider({ models })).toEqual({
+      id: "qvac",
+      name: "QVAC Local",
+      protocol: "openai-compatible",
+      defaultModel: "custom-local",
+      models,
+      openai: {
+        baseURL: DEFAULT_QVAC_OPENAI_BASE_URL,
+        apiKey: DEFAULT_QVAC_API_KEY,
+      },
+    });
+  });
+
+  it("allows the default model to be overridden independently from the catalog", () => {
+    expect(
+      createHermesQvacProvider({
+        model: "custom-selected",
+        models: [
+          {
+            id: "custom-available",
+            name: "Custom Available",
+            description: "A user-provided model option.",
+          },
+        ],
+      }).defaultModel,
+    ).toBe("custom-selected");
   });
 
   it("exports a ready-to-use default provider", () => {

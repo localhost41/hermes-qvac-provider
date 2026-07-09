@@ -5,6 +5,31 @@ export const DEFAULT_QVAC_SERVER_TIMEOUT_MS = 2_000;
 
 export type HermesQvacProviderProtocol = "openai-compatible";
 
+export interface HermesQvacModelCatalogEntry {
+  id: string;
+  name: string;
+  description: string;
+  contextWindowTokens?: number;
+}
+
+export const DEFAULT_QVAC_MODEL_CATALOG: HermesQvacModelCatalogEntry[] = [
+  {
+    id: DEFAULT_QVAC_MODEL,
+    name: "QVAC Default",
+    description: "General-purpose local QVAC model for development and smoke tests.",
+  },
+  {
+    id: "qvac-small",
+    name: "QVAC Small",
+    description: "Lightweight local QVAC model for fast iteration.",
+  },
+  {
+    id: "qvac-coder",
+    name: "QVAC Coder",
+    description: "Code-oriented local QVAC model for developer workflows.",
+  },
+];
+
 export interface HermesQvacProviderOptions {
   /**
    * OpenAI-compatible QVAC endpoint. Defaults to a local development server.
@@ -18,6 +43,11 @@ export interface HermesQvacProviderOptions {
    * Default model identifier Hermes should request from QVAC.
    */
   model?: string;
+  /**
+   * Curated models Hermes should present for this QVAC provider. Defaults to the
+   * built-in local development catalog.
+   */
+  models?: readonly HermesQvacModelCatalogEntry[];
   /**
    * Optional headers forwarded to the underlying OpenAI-compatible client.
    */
@@ -35,6 +65,7 @@ export interface HermesQvacProvider {
   name: "QVAC Local";
   protocol: HermesQvacProviderProtocol;
   defaultModel: string;
+  models: HermesQvacModelCatalogEntry[];
   openai: HermesQvacOpenAIConfig;
 }
 
@@ -84,11 +115,16 @@ export function createQvacOpenAIConfig(
 export function createHermesQvacProvider(
   options: HermesQvacProviderOptions = {},
 ): HermesQvacProvider {
+  const models = (options.models ?? DEFAULT_QVAC_MODEL_CATALOG).map((model) => ({
+    ...model,
+  }));
+
   return {
     id: "qvac",
     name: "QVAC Local",
     protocol: "openai-compatible",
-    defaultModel: options.model ?? DEFAULT_QVAC_MODEL,
+    defaultModel: options.model ?? models[0]?.id ?? DEFAULT_QVAC_MODEL,
+    models,
     openai: createQvacOpenAIConfig(options),
   };
 }
