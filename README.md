@@ -1,12 +1,41 @@
 # hermes-qvac-provider
 
+> **Alpha Release** — This version (`v0.1.0-alpha.1`) is an early development preview. It is not yet published to the npm registry. Use for local testing and integration.
+
 Minimal TypeScript provider package for connecting Hermes to a local QVAC
 OpenAI-compatible endpoint.
 
+## Release notes (v0.1.0-alpha.1)
+
+- Initial provider descriptor exposing QVAC models via an OpenAI-compatible endpoint.
+- Built-in default model catalog with `qvac-default`, `qvac-small`, and `qvac-coder`.
+- Server reachability detection (`detectQvacServer` / `assertQvacServerReachable`).
+- Streaming capability metadata advertised through Hermes.
+- `createHermesQvacProvider()` helper that produces a ready-to-use provider configuration.
+
+This release is intended for local integration testing and feedback. Breaking
+changes may occur before the first stable release.
+
 ## Install
 
-Install the provider in the Hermes integration project that will connect to
-QVAC:
+The package has not yet been published to the npm registry. For local
+development, clone the repository and build before packing:
+
+```bash
+pnpm install
+pnpm build
+npm pack
+```
+
+This produces a tarball (e.g.
+`localhostlabs-hermes-qvac-provider-0.1.0-alpha.1.tgz`). Install it in your
+Hermes integration project:
+
+```bash
+pnpm add ./localhostlabs-hermes-qvac-provider-0.1.0-alpha.1.tgz
+```
+
+When the package is published you will be able to install it directly:
 
 ```bash
 pnpm add @localhostlabs/hermes-qvac-provider

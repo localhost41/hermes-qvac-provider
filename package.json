@@ -1,6 +1,6 @@
 {
   "name": "@localhostlabs/hermes-qvac-provider",
-  "version": "0.1.0-alpha.0",
+  "version": "0.1.0-alpha.1",
   "description": "QVAC developer tooling package: hermes-qvac-provider",
   "type": "module",
   "main": "dist/index.js",
