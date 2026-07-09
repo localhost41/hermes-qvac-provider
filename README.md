@@ -160,7 +160,11 @@ It checks:
 - `qvac` is installed
 - `qvac --version` works
 - `http://127.0.0.1:11434/v1/models` responds
-- Hermes can list or use provider `qvac` with known provider-list commands
+- `hermes plugins list` includes the installed `qvac` plugin
+
+The current Hermes CLI uses interactive `hermes model` for model selection. The
+doctor script does not run that interactive command; it prints it as the manual
+next step after checking plugin discovery.
 
 You can also directly check the health endpoint:
 
@@ -192,6 +196,7 @@ pnpm lint
 pnpm test
 pnpm build
 python3 -m unittest discover -s tests -p 'test_*.py'
+pnpm verify:package
 ```
 
 ## Alpha Release Readiness
@@ -199,11 +204,14 @@ python3 -m unittest discover -s tests -p 'test_*.py'
 - Package version: `0.1.0-alpha.1`
 - Plugin metadata version: `0.1.0-alpha.1`
 - Packaged assets include `dist`, `docs`, `examples`, `qvac_provider`, `scripts`,
-  `plugin.yaml`, `README.md`, and `CHANGELOG.md`.
-- Verify the package contents without publishing:
+  `plugin.yaml`, `README.md`, `CHANGELOG.md`, and `LICENSE`.
+- Verify the package tarball contents without publishing:
 
 ```bash
-npm pack --dry-run
+pnpm verify:package
 ```
 
-This repository does not publish a stable release as part of alpha prep.
+The local checks cover TypeScript compile/tests, Python profile and script
+tests, and packed tarball contents. They do not prove end-to-end QVAC/Hermes
+model execution unless QVAC is running and you manually select the provider via
+Hermes.

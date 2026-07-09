@@ -2,6 +2,7 @@
   "name": "@localhostlabs/hermes-qvac-provider",
   "version": "0.1.0-alpha.1",
   "description": "QVAC developer tooling package: hermes-qvac-provider",
+  "license": "MIT",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -13,6 +14,7 @@
   },
   "sideEffects": false,
   "files": [
+    "__init__.py",
     "dist",
     "docs",
     "examples",
@@ -20,7 +22,8 @@
     "scripts",
     "plugin.yaml",
     "README.md",
-    "CHANGELOG.md"
+    "CHANGELOG.md",
+    "LICENSE"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
@@ -28,7 +31,8 @@
     "demo": "pnpm build && node examples/hermes-qvac-demo.mjs",
     "test": "vitest run",
     "test:python": "python3 -m unittest discover -s tests -p 'test_*.py'",
-    "lint": "tsc -p tsconfig.json --noEmit"
+    "lint": "tsc -p tsconfig.json --noEmit",
+    "verify:package": "bash scripts/verify-package.sh"
   },
   "devDependencies": {
     "@types/node": "^26.0.0",

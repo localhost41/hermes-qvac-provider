@@ -15,7 +15,7 @@ fi
 case "$MODE" in
   --copy)
     mkdir -p "$TARGET_DIR"
-    cp -R "$SOURCE_DIR/plugin.yaml" "$SOURCE_DIR/qvac_provider" "$SOURCE_DIR/scripts" "$TARGET_DIR/"
+    cp -R "$SOURCE_DIR/__init__.py" "$SOURCE_DIR/plugin.yaml" "$SOURCE_DIR/qvac_provider" "$SOURCE_DIR/scripts" "$TARGET_DIR/"
     ;;
   --symlink)
     ln -s "$SOURCE_DIR" "$TARGET_DIR"
