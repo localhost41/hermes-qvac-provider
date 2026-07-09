@@ -50,3 +50,7 @@ config:
     default: 0
   timeoutSeconds:
     default: 120
+lifecycle:
+  managed: false
+  limitation: Hermes model-provider plugins do not currently expose a clean provider-local service lifecycle hook.
+  healthCheckPath: /v1/models

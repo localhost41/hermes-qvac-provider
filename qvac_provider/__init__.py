@@ -17,6 +17,30 @@ DEFAULT_MODEL = "qwen3.5-9b"
 DEFAULT_AUX_MODEL = "qwen3.5-2b"
 DEFAULT_MAX_TOKENS = 8192
 DEFAULT_CONTEXT_WINDOW = 32768
+DEFAULT_QVAC_COMMAND = "qvac serve openai"
+DEFAULT_HOST = "127.0.0.1"
+DEFAULT_PORT = 11434
+DEFAULT_READY_TIMEOUT_MS = 30_000
+DEFAULT_IDLE_STOP_MS = 0
+DEFAULT_TIMEOUT_SECONDS = 120
+MANAGED_LIFECYCLE_SUPPORTED = False
+LIFECYCLE_LIMITATION = (
+    "Hermes model-provider plugins currently expose declarative ProviderProfile "
+    "request/catalog hooks, but not a clean provider-local service lifecycle hook. "
+    "QVAC must be started manually."
+)
+
+DEFAULT_LIFECYCLE_CONFIG = {
+    "enabled": MANAGED_LIFECYCLE_SUPPORTED,
+    "qvacCommand": DEFAULT_QVAC_COMMAND,
+    "host": DEFAULT_HOST,
+    "port": DEFAULT_PORT,
+    "cwd": "",
+    "readyTimeoutMs": DEFAULT_READY_TIMEOUT_MS,
+    "idleStopMs": DEFAULT_IDLE_STOP_MS,
+    "timeoutSeconds": DEFAULT_TIMEOUT_SECONDS,
+    "healthCheckPath": "/v1/models",
+}
 
 FALLBACK_MODELS = [
     "qwen3.5-9b",
@@ -118,21 +142,23 @@ def create_provider_profile() -> Any:
             "friendly_model_ids": FRIENDLY_MODEL_IDS,
             "server_command": "qvac serve openai --host 127.0.0.1 --port 11434",
             "zero_cost_local_models": True,
-            "v0_1_lifecycle": "manual",
+            "managed_lifecycle_supported": MANAGED_LIFECYCLE_SUPPORTED,
+            "lifecycle_limitation": LIFECYCLE_LIMITATION,
+            "lifecycle_config": dict(DEFAULT_LIFECYCLE_CONFIG),
             "config_options": {
                 "model": DEFAULT_MODEL,
-                "host": "127.0.0.1",
-                "port": 11434,
+                "host": DEFAULT_HOST,
+                "port": DEFAULT_PORT,
                 "baseUrl": DEFAULT_BASE_URL,
                 "apiKey": "custom-local",
-                "qvacCommand": "qvac serve openai",
+                "qvacCommand": DEFAULT_QVAC_COMMAND,
                 "cwd": "",
                 "ctxSize": DEFAULT_CONTEXT_WINDOW,
                 "reasoningBudget": None,
                 "tools": True,
-                "readyTimeoutMs": 30_000,
-                "idleStopMs": 0,
-                "timeoutSeconds": 120,
+                "readyTimeoutMs": DEFAULT_READY_TIMEOUT_MS,
+                "idleStopMs": DEFAULT_IDLE_STOP_MS,
+                "timeoutSeconds": DEFAULT_TIMEOUT_SECONDS,
             },
         },
     }
@@ -168,12 +194,21 @@ __all__ = [
     "DEFAULT_AUX_MODEL",
     "DEFAULT_BASE_URL",
     "DEFAULT_CONTEXT_WINDOW",
+    "DEFAULT_HOST",
+    "DEFAULT_IDLE_STOP_MS",
+    "DEFAULT_LIFECYCLE_CONFIG",
     "DEFAULT_MAX_TOKENS",
     "DEFAULT_MODEL",
     "DEFAULT_MODELS_URL",
+    "DEFAULT_PORT",
+    "DEFAULT_QVAC_COMMAND",
+    "DEFAULT_READY_TIMEOUT_MS",
+    "DEFAULT_TIMEOUT_SECONDS",
     "FALLBACK_MODELS",
     "FRIENDLY_MODEL_IDS",
+    "LIFECYCLE_LIMITATION",
     "LocalProviderProfile",
+    "MANAGED_LIFECYCLE_SUPPORTED",
     "PROVIDER_PROFILE",
     "create_provider_profile",
     "register",

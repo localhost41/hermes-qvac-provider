@@ -12,14 +12,18 @@ http://127.0.0.1:11434/v1
 It follows the practical defaults used by Tether's `@qvac/openclaw-plugin`, but
 targets Hermes Agent's Python model-provider plugin system.
 
-## v0.1 Scope
+## v0.2 Scope
 
-This alpha release provides a working Hermes provider entry for QVAC. It does not
-manage the QVAC server lifecycle yet. Run QVAC in one terminal and Hermes in
-another.
+This alpha release provides a working Hermes provider entry for QVAC. It does
+not manage the QVAC server lifecycle yet. Run QVAC in one terminal and Hermes
+in another.
 
-Managed lifecycle support should be added in v0.2 if Hermes exposes a clean hook
-for provider-local services.
+The current Hermes model-provider plugin surface is a declarative
+`ProviderProfile`. It supports provider request/catalog hooks such as message
+preparation, API kwargs, and model fetching, but it does not expose a clean
+provider-local service lifecycle hook for starting and stopping a local server.
+Hermes' general plugin lifecycle hooks are not used for model-provider plugins,
+so this package keeps manual QVAC startup as the supported path.
 
 ## Defaults
 
@@ -91,6 +95,30 @@ qvac serve openai --host 127.0.0.1 --port 11434
 ```
 
 Leave that terminal running while Hermes uses the provider.
+
+## Managed Lifecycle
+
+Managed startup is intentionally disabled because Hermes currently exposes no
+clean provider-local service lifecycle hook for model providers.
+
+The intended command remains:
+
+```bash
+qvac serve openai --host 127.0.0.1 --port 11434
+```
+
+The plugin metadata keeps the lifecycle-related defaults for future
+compatibility:
+
+- `qvacCommand`: `qvac serve openai`
+- `cwd`: empty string
+- `readyTimeoutMs`: `30000`
+- `idleStopMs`: `0`
+- `timeoutSeconds`: `120`
+- Health check path: `/v1/models`
+
+Because managed lifecycle is not active, the provider does not install QVAC,
+spawn QVAC, stop QVAC, or kill any existing process.
 
 ## Configure Hermes
 
