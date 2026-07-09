@@ -1,3 +1,4 @@
+import importlib.util
 from pathlib import Path
 import unittest
 
@@ -27,11 +28,29 @@ def profile_metadata():
 class ProviderProfileTest(unittest.TestCase):
     def test_plugin_metadata_exists(self):
         plugin_yaml = ROOT / "plugin.yaml"
+        plugin_entrypoint = ROOT / "__init__.py"
 
         self.assertTrue(plugin_yaml.exists())
+        self.assertTrue(plugin_entrypoint.exists())
         text = plugin_yaml.read_text(encoding="utf-8")
         self.assertIn("id: qvac", text)
         self.assertIn("type: model-provider", text)
+        self.assertIn("register_provider(PROVIDER_PROFILE)", plugin_entrypoint.read_text(encoding="utf-8"))
+
+    def test_root_plugin_entrypoint_imports_without_hermes_runtime(self):
+        plugin_entrypoint = ROOT / "__init__.py"
+        spec = importlib.util.spec_from_file_location(
+            "hermes_qvac_provider_plugin",
+            plugin_entrypoint,
+            submodule_search_locations=[str(ROOT)],
+        )
+        self.assertIsNotNone(spec)
+        self.assertIsNotNone(spec.loader)
+        module = importlib.util.module_from_spec(spec)
+
+        spec.loader.exec_module(module)
+
+        self.assertEqual(module.PROVIDER_PROFILE.name, "qvac")
 
     def test_provider_profile_registers_qvac(self):
         self.assertEqual(profile_value("name"), "qvac")

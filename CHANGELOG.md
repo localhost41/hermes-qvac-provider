@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Update `scripts/doctor.sh` to use the current `hermes plugins list` discovery
+  surface and avoid removed provider-list commands.
+- Add Python unittest coverage for install and doctor script behavior using
+  fake local commands instead of a live QVAC server.
+- Add package tarball verification for expected runtime assets.
+- Add an MIT license and include it in the package.
 - Document that Hermes currently has no clean model-provider-local service
   lifecycle hook, so QVAC startup remains manual for v0.2.
 - Add lifecycle limitation metadata and tests for the preserved QVAC lifecycle
