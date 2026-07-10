@@ -1,5 +1,7 @@
 import importlib.util
 from pathlib import Path
+import sys
+import types
 import unittest
 
 from qvac_provider import (
@@ -51,6 +53,59 @@ class ProviderProfileTest(unittest.TestCase):
         spec.loader.exec_module(module)
 
         self.assertEqual(module.PROVIDER_PROFILE.name, "qvac")
+
+    def test_provider_profile_uses_hermes_runtime_profile_when_available(self):
+        original_providers = sys.modules.get("providers")
+        original_base = sys.modules.get("providers.base")
+        original_qvac_provider = sys.modules.pop("qvac_provider", None)
+        try:
+            providers_module = types.ModuleType("providers")
+            base_module = types.ModuleType("providers.base")
+
+            class FakeProviderProfile:
+                def __init__(self, **kwargs):
+                    self.__dict__.update(kwargs)
+
+                def prepare_messages(self, messages):
+                    return messages
+
+                def build_extra_body(self, **context):
+                    return {}
+
+                def build_api_kwargs_extras(self, **context):
+                    return {}, {}
+
+            base_module.ProviderProfile = FakeProviderProfile
+            providers_module.base = base_module
+            sys.modules["providers"] = providers_module
+            sys.modules["providers.base"] = base_module
+
+            spec = importlib.util.spec_from_file_location(
+                "qvac_provider",
+                ROOT / "qvac_provider" / "__init__.py",
+                submodule_search_locations=[str(ROOT / "qvac_provider")],
+            )
+            self.assertIsNotNone(spec)
+            self.assertIsNotNone(spec.loader)
+            module = importlib.util.module_from_spec(spec)
+            sys.modules["qvac_provider"] = module
+
+            spec.loader.exec_module(module)
+
+            self.assertIsInstance(module.PROVIDER_PROFILE, FakeProviderProfile)
+            self.assertTrue(hasattr(module.PROVIDER_PROFILE, "prepare_messages"))
+        finally:
+            sys.modules.pop("qvac_provider", None)
+            if original_qvac_provider is not None:
+                sys.modules["qvac_provider"] = original_qvac_provider
+            if original_providers is not None:
+                sys.modules["providers"] = original_providers
+            else:
+                sys.modules.pop("providers", None)
+            if original_base is not None:
+                sys.modules["providers.base"] = original_base
+            else:
+                sys.modules.pop("providers.base", None)
 
     def test_provider_profile_registers_qvac(self):
         self.assertEqual(profile_value("name"), "qvac")
