@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- No unreleased changes.
+
+## v0.1.0-alpha.2 - 2026-07-10
+
 - Update `scripts/doctor.sh` to use the current `hermes plugins list` discovery
   surface and avoid removed provider-list commands.
 - Add Python unittest coverage for install and doctor script behavior using
@@ -12,6 +16,11 @@
   lifecycle hook, so QVAC startup remains manual for v0.2.
 - Add lifecycle limitation metadata and tests for the preserved QVAC lifecycle
   config defaults.
+- Add public scoped-package publish metadata, explicit Node 22-26 support,
+  Node matrix CI, `verify:package` in CI, and a manual alpha publish workflow.
+- Expand package verification to install the packed tarball into a clean npm
+  consumer, smoke-test JS and Python imports from installed contents, and copy
+  plugin assets into a clean `HERMES_HOME`.
 
 ## v0.1.0-alpha.1
 
