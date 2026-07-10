@@ -18,7 +18,7 @@
     "dist",
     "docs",
     "examples",
-    "qvac_provider",
+    "qvac_provider/__init__.py",
     "scripts",
     "plugin.yaml",
     "README.md",

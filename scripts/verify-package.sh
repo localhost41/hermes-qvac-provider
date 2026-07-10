@@ -35,8 +35,8 @@ require_file() {
 
 reject_path() {
   local path="$1"
-  if grep -Fq "package/$path" "$TMP_DIR/contents.txt"; then
-    echo "Packed tarball unexpectedly includes package/$path" >&2
+  if grep -Fq "$path" "$TMP_DIR/contents.txt"; then
+    echo "Packed tarball unexpectedly includes $path" >&2
     exit 1
   fi
 }
@@ -57,6 +57,8 @@ require_file "scripts/install.sh"
 require_file "scripts/start-qvac.sh"
 
 reject_path "node_modules/"
+reject_path "__pycache__/"
+reject_path ".pyc"
 reject_path "test/"
 reject_path "tests/"
 reject_path ".git/"
