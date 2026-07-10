@@ -3,6 +3,14 @@
   "version": "0.1.0-alpha.1",
   "description": "QVAC developer tooling package: hermes-qvac-provider",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/localhost41/hermes-qvac-provider.git"
+  },
+  "bugs": {
+    "url": "https://github.com/localhost41/hermes-qvac-provider/issues"
+  },
+  "homepage": "https://github.com/localhost41/hermes-qvac-provider#readme",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -25,6 +33,12 @@
     "CHANGELOG.md",
     "LICENSE"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=22 <27"
+  },
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "prepack": "npm run build",
