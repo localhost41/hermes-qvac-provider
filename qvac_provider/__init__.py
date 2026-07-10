@@ -111,7 +111,7 @@ class LocalProviderProfile:
 
 def _hermes_provider_profile_class() -> type[Any]:
     try:
-        from hermes.model_providers import ProviderProfile  # type: ignore
+        from providers.base import ProviderProfile  # type: ignore
 
         return ProviderProfile
     except Exception:
