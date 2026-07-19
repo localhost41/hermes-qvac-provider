@@ -1,7 +1,16 @@
 {
   "name": "@localhost41/hermes-qvac-provider",
   "version": "0.1.0-alpha.2",
-  "description": "QVAC developer tooling package: hermes-qvac-provider",
+  "description": "Hermes Agent model-provider plugin for private, local QVAC models",
+  "keywords": [
+    "qvac",
+    "hermes-agent",
+    "ai-agents",
+    "local-ai",
+    "model-provider",
+    "openai-compatible",
+    "privacy"
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",

@@ -2,7 +2,9 @@
 
 ## Unreleased
 
-- No unreleased changes.
+- Add npm discovery keywords and a benefit-oriented package description.
+- Clarify that this is an independent community project.
+- Align the demo fallback URL with QVAC CLI's `127.0.0.1:11434` default.
 
 ## v0.1.0-alpha.2 - 2026-07-10
 

@@ -6,7 +6,7 @@ import {
 } from "../dist/index.js";
 
 const shouldCheckServer = process.argv.includes("--check");
-const baseURL = process.env.QVAC_BASE_URL ?? "http://localhost:8000/v1";
+const baseURL = process.env.QVAC_BASE_URL ?? "http://127.0.0.1:11434/v1";
 const apiKey = process.env.QVAC_API_KEY ?? "qvac-local";
 const model = process.env.QVAC_MODEL ?? "qvac-default";
 
