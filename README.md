@@ -2,6 +2,9 @@
 
 Hermes Agent model-provider plugin for local QVAC models.
 
+> Independent community project maintained by localhost41. Not affiliated with
+> or endorsed by Tether or QVAC.
+
 This plugin registers provider id `qvac` and points Hermes at QVAC's local
 OpenAI-compatible endpoint:
 
