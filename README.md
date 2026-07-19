@@ -204,8 +204,8 @@ pnpm verify:package
 
 ## Alpha Release Readiness
 
-- Package version: `0.1.0-alpha.1`
-- Plugin metadata version: `0.1.0-alpha.1`
+- Package version: `0.1.0-alpha.3`
+- Plugin metadata version: `0.1.0-alpha.3`
 - Packaged assets include `dist`, `docs`, `examples`, `qvac_provider`, `scripts`,
   `plugin.yaml`, `README.md`, `CHANGELOG.md`, and `LICENSE`.
 - Verify the package tarball contents without publishing:
