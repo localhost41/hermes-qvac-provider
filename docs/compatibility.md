@@ -14,7 +14,7 @@
 
 Hermes currently has no stable third-party ProviderProfile version contract published independently of Hermes releases. The profile filters optional constructor fields by the inspected signature, but it does not suppress constructor failures. Hermes 0.18.2 is the fully verified host version. `doctor` performs an actual subclass import so an incompatible future host fails visibly.
 
-The package engine range is Node `>=20 <27`, matching the official AI provider’s Node 20 minimum and the versions exercised by CI. The Python source and current Hermes host require Python 3.11 or newer; CI covers 3.11–3.13.
+The package engine range is Node `>=22 <27`, matching the current pnpm toolchain and the versions exercised by CI. The Python source and current Hermes host require Python 3.11 or newer; CI covers 3.11–3.13.
 
 ## Scheduled drift check
 

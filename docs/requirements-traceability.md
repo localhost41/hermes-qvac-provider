@@ -18,7 +18,7 @@ This record maps the release-candidate requirements to implementation and eviden
 | Physical smoke | managed/external path and explicit consent | estimate/guard/exact-output logic tests | guard command; 2026-07-21 resource review | No-go for this review without separate download consent: smallest preload is 1.69 GiB; host has 35 GiB free disk and 16 GiB RAM |
 | Fake QVAC/Hermes rigor | integration fixtures | config/readiness/failure/reuse/signals/exits/timeouts | TS suite | Real inference is separate by design |
 | npm artifact | package metadata and verifier | isolated consumer, bin, setup/run/serve/status/stop/doctor/smoke/uninstall | `pnpm verify:package` | None known |
-| Cross-platform | Node 20–26, Python 3.11–3.13 CI on Linux/macOS | CI matrix, Node 20 local test | workflow and local minimum-node run | Real Hermes currently verified with its Python 3.11 environment |
+| Cross-platform | Node 22–26, Python 3.11–3.13 CI on Linux/macOS | CI matrix | workflow plus local Node 26 run | Real Hermes currently verified with its Python 3.11 environment |
 | Compatibility drift | scheduled official package/Hermes source workflow | no-save constraints assertion | compatibility workflow | Scheduled result depends on external registries/GitHub |
 | Performance/resources | bounded I/O, probes, timeouts, cleanup | output/body/time/process tests | suites and timing observations | Model inference performance is hardware-dependent |
 | Security/privacy | threat model, redaction, ownership, safe spawn, bounded network | adversarial TS/Python/package tests, dependency audit | `pnpm audit --prod` | Local user controlling HERMES_HOME already controls that tree |

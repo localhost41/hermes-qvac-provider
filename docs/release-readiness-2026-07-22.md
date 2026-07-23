@@ -116,7 +116,7 @@ general model-quality guarantee.
 | Platform/runtime | Status |
 | --- | --- |
 | macOS arm64, Node 26 | Full local automation and live inference performed |
-| Linux x64, Node 20/22/24/26 | Hosted CI configured; no physical live inference in this review |
+| Linux x64, Node 22/24/26 | Hosted CI configured; no physical live inference in this review |
 | macOS, Node 22 | Hosted CI configured; no separate local Node 22 live run |
 | Windows x64 | Not tested and not claimed |
 | Python 3.11/3.12/3.13 | Hosted test matrix configured; live Hermes used Python 3.11 |

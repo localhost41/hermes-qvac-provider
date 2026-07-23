@@ -14,12 +14,6 @@ jobs:
         include:
           - {
               os: ubuntu-latest,
-              node-version: 20,
-              pnpm-version: 10.28.2,
-              python-version: "3.11",
-            }
-          - {
-              os: ubuntu-latest,
               node-version: 22,
               pnpm-version: 11.10.0,
               python-version: "3.11",
@@ -45,21 +39,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
-        if: matrix.node-version != 20
         with:
           version: ${{ matrix.pnpm-version }}
       - uses: actions/setup-node@v4
-        if: matrix.node-version != 20
         with:
           node-version: ${{ matrix.node-version }}
           cache: pnpm
-      - uses: actions/setup-node@v4
-        if: matrix.node-version == 20
-        with:
-          node-version: ${{ matrix.node-version }}
-      - name: Install Node 20-compatible pnpm
-        if: matrix.node-version == 20
-        run: npm install --global pnpm@${{ matrix.pnpm-version }}
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}

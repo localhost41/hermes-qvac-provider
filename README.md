@@ -8,7 +8,7 @@ The Python plugin makes `qvac` a real Hermes model provider. The `hermes-qvac` C
 
 ## Requirements
 
-- Node 20–26
+- Node 22–26
 - Hermes Agent available as `hermes` (fully verified with 0.18.2)
 - Python 3.11–3.13 (normally supplied by Hermes)
 - Enough RAM and disk for the selected local model

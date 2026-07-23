@@ -6,7 +6,7 @@
 - Use the official QVAC catalog and managed provider to generate all eight friendly model aliases, preload Hermes' main and auxiliary models, and preserve upstream reuse and cleanup behavior.
 - Add atomic ownership-aware install/upgrade/uninstall behavior and isolated Hermes enablement/profile verification.
 - Add fake-QVAC lifecycle, port-collision, cleanup, status/stop, fake-Hermes environment/signal, real-Hermes transport, and installed-tarball tests.
-- Add Linux Node 20–26 and macOS CI coverage plus scheduled current-QVAC compatibility checks.
+- Add Linux Node 22–26 and macOS CI coverage plus scheduled current-QVAC compatibility checks.
 - Document configuration, architecture, resource safety, host limitations, and evidence-based OpenClaw parity.
 - Harden hostile-state and endpoint handling with bounded parsing, strict session schemas, corrupt-record isolation, recursive secret redaction, subprocess/output limits, and authenticated control health.
 - Make setup transactional and serialized, including enablement rollback, interrupted-backup recovery, payload-hashed ownership markers, symlink refusal, and disable-before-delete uninstall safety.
