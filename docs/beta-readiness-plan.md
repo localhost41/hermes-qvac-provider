@@ -18,7 +18,7 @@ Beta does not require this plugin to replace Hermes or QVAC behavior.
 | Linux x64 | Packed install, real Hermes discovery, authenticated external QVAC inference, tool outcome, and cleanup pass on a fresh Linux x64 host | Platform | Not yet demonstrated live |
 | macOS arm64 | Repeat the full authenticated external and managed acceptance lanes from the frozen beta artifact | Platform | Alpha evidence exists; beta rerun required |
 | Windows | WSL2 is tested and documented, or all Windows claims remain absent | Platform | Untested; no native claim |
-| Runtime matrix | Node 22, 24, 26 and Python 3.11, 3.12, 3.13 package/profile gates pass | Plugin | Hosted alpha.5 gates pass |
+| Runtime matrix | Node 22, 24, 26 and Python 3.11, 3.12, 3.13 package/profile gates pass; the real ProviderProfile contract passes against Hermes 0.19.0 and current main | Plugin/Hermes | Hosted runtime matrix passes; release/main contract lanes added |
 | Supply chain | Frozen tarball inventory, SHA-256, SBOM, production audit, CodeQL, minimal workflow permissions, and provenance rehearsal pass | Plugin | Alpha machinery exists; beta rerun required |
 | Resilience | 100 sequential requests, bounded concurrency, restart/reinstall cycles, cancellation, and unavailable/malformed endpoint cases show no leaks or state drift | Plugin/upstream | Alpha evidence exists; beta rerun required |
 

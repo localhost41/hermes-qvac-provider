@@ -18,6 +18,6 @@ The package engine range is Node `>=22 <27`, matching the current pnpm toolchain
 
 ## Scheduled drift check
 
-The weekly/manual compatibility workflow installs the locked project, updates official QVAC packages to their latest versions with `--no-save`, asserts `package.json` did not change, and reruns TypeScript, Python, and packed-consumer verification on Linux and macOS. It also clones current Hermes source and verifies that the packaged profile remains an actual `ProviderProfile`.
+Every pull request verifies the real provider contract against the supported Hermes 0.19.0 tag and current Hermes main. The weekly/manual compatibility workflow installs the locked project, updates official QVAC packages to their latest versions with `--no-save`, asserts `package.json` did not change, and reruns TypeScript, Python, and packed-consumer verification on Linux and macOS. It also clones current Hermes source and verifies that the packaged profile remains an actual `ProviderProfile`.
 
 This workflow diagnoses compatibility; it never changes dependency constraints, commits files, publishes packages, or downloads a model.
