@@ -2,8 +2,8 @@
 
 ## Recommendation
 
-**GO AS ALPHA after this branch passes hosted CI.** Do not promote the npm
-`latest` tag and do not describe the project as production-ready.
+**GO AS ALPHA.** Do not promote the npm `latest` tag and do not describe the
+project as production-ready.
 
 The candidate is demonstrably usable on macOS arm64 with Hermes 0.18.2 and
 QVAC 0.8.1. Clean copied installation, discovery, provider loading, basic live
@@ -38,6 +38,7 @@ listed below.
 | Shell scripts | `shellcheck scripts/*.sh` and `bash -n scripts/*.sh` | PASS |
 | Manifest parse | Hermes Python + PyYAML `safe_load(plugin.yaml)` | PASS |
 | Diff hygiene | `git diff --check` | PASS |
+| Hosted matrix | GitHub Actions PR #32 | PASS: macOS Node 22; Linux Node 22, 24, and 26 |
 
 The real-Hermes adverse transport harness completed every case within its
 deadline. Success streaming returned `pong`. HTTP failure, malformed SSE,
@@ -116,8 +117,8 @@ general model-quality guarantee.
 | Platform/runtime | Status |
 | --- | --- |
 | macOS arm64, Node 26 | Full local automation and live inference performed |
-| Linux x64, Node 22/24/26 | Hosted CI configured; no physical live inference in this review |
-| macOS, Node 22 | Hosted CI configured; no separate local Node 22 live run |
+| Linux x64, Node 22/24/26 | Full hosted automation passed; no physical live inference in this review |
+| macOS, Node 22 | Full hosted automation passed; no separate local Node 22 live run |
 | Windows x64 | Not tested and not claimed |
 | Python 3.11/3.12/3.13 | Hosted test matrix configured; live Hermes used Python 3.11 |
 
@@ -138,6 +139,7 @@ general model-quality guarantee.
 - No npm publish, git tag, stable dist-tag change, or `latest` promotion was
   performed by this review.
 
-Before alpha.4 is published: require green hosted CI on the review branch,
-inspect the final npm tarball, review this report and the security/compatibility
-documents, and publish only through the existing protected alpha workflow.
+Before alpha.4 is published: inspect the final npm tarball, review this report
+and the security/compatibility documents, and publish only through the existing
+protected alpha workflow. PR #32's hosted matrix is green; the draft status is
+retained for maintainer review, not because of a failing automated gate.
