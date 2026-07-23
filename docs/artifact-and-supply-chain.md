@@ -35,7 +35,9 @@ path and does not modify `latest`.
 
 Repository secret scanning and push protection are enabled. CI and drift
 workflows have read-only repository permission, actions are pinned to exact
-revisions, dependency review checks pull requests, CodeQL covers JavaScript/
-TypeScript and Python, and production dependencies are audited at high severity.
-These controls do not replace review of native QVAC dependencies or upstream
-release provenance.
+revisions, CodeQL covers JavaScript/TypeScript and Python, and production
+dependencies are audited at high severity. GitHub's dependency-review action
+was validated but cannot run while the repository dependency graph is disabled;
+the workflow is intentionally not left permanently red. Enabling that repository
+setting is a separate owner decision. These controls do not replace review of
+native QVAC dependencies or upstream release provenance.
