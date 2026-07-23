@@ -23,3 +23,6 @@ older fixture's unterminated stream caused retries.
 No QVAC or plugin workaround is appropriate for generic Hermes client error
 handling. The defensible plugin responsibility is a strict success predicate,
 bounded process lifetime, group cleanup, capped output, and redacted evidence.
+Those guarantees apply to the captured `smoke` and conformance paths.
+Interactive `run` deliberately attaches Hermes standard streams and follows the
+host lifetime; it is not advertised as a bounded transport-health command.

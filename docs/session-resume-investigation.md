@@ -30,7 +30,9 @@ session-resume test.
 ## Ownership and next action
 
 No plugin patch is justified. The plugin already passes explicit provider and
-model values for its launched Hermes process. Interactive resume remains
-**provisional** until a stable PTY harness or a human-driven live session
-completes a second turn. If Hermes intends one-shot resume to work, that is a
-generic Hermes feature request; no QVAC-specific workaround should be added.
+model values for its launched Hermes process. Interactive resume is **outside
+the supported plugin surface** for alpha.5 and the planned beta. A future
+release may add it only after a stable PTY harness or a human-driven live
+session completes a second turn while preserving the stored provider and model.
+If Hermes intends one-shot resume to work, that is a generic Hermes feature
+request; no QVAC-specific workaround should be added.

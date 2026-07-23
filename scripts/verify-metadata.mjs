@@ -59,6 +59,11 @@ requireMatch(
   /Change metadata to beta only after every required gate is passed/,
   "beta promotion rule drifted",
 );
+requireMatch(
+  readme,
+  /Session resume is not part of the supported surface/,
+  "README must state the beta session-resume boundary",
+);
 if (/Node 20(?:\b|–|-)/.test(`${readme}\n${compatibility}`)) {
   throw new Error("maintained support docs still claim Node 20");
 }

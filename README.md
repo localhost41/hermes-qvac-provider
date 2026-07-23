@@ -147,6 +147,21 @@ hermes-qvac smoke --model qwen3.5-0.8b --yes
 
 The physical test starts managed QVAC, waits for model readiness, invokes real Hermes, and requires exact `pong`. No model download occurs during setup, doctor, models, config, package verification, or transport-only smoke.
 
+## Supported host surface
+
+The release candidate supports fresh one-shot and interactive Hermes sessions.
+Session resume is not part of the supported surface: current Hermes dispatches a
+one-shot `--resume` request before its interactive restoration path, and a fully
+automated second interactive turn has not been demonstrated. Invoke a fresh
+session or follow Hermes' own resume guidance without treating this plugin as a
+resume compatibility layer.
+
+`hermes-qvac smoke` is a bounded acceptance command and forcibly terminates a
+Hermes process group that exceeds its deadline or output cap. `hermes-qvac run`
+is an interactive pass-through; its lifetime belongs to Hermes and it is not a
+bounded adverse-stream test. Use `smoke` or the conformance harness for release
+health checks.
+
 ## Doctor and troubleshooting
 
 `hermes-qvac doctor` verifies:
