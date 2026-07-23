@@ -11,7 +11,7 @@ by the package gate.
 Run the provenance gate only from a clean candidate commit:
 
 ```console
-pnpm verify:artifact -- --output-dir /absolute/empty/output-directory \
+pnpm verify:artifact --output-dir /absolute/empty/output-directory \
   > alpha4-provenance.json
 ```
 

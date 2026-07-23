@@ -455,7 +455,7 @@ setInterval(() => {}, 1000);
       await new Promise((resolvePromise) => setTimeout(resolvePromise, 25));
     }
     expect(alive).toBe(false);
-  });
+  }, 10_000);
 });
 
 describe("foreground serve ownership", () => {

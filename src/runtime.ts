@@ -1386,6 +1386,34 @@ function childExitCode(
   return signal ? 128 + (osConstants.signals[signal] ?? 0) : 1;
 }
 
+const hermesDescendants = new WeakMap<object, number[]>();
+
+function processDescendants(rootPid: number): number[] {
+  const result = spawnSync("ps", ["-axo", "pid=,ppid="], {
+    encoding: "utf8",
+    timeout: 5_000,
+    maxBuffer: 1024 * 1024,
+  });
+  if (result.status !== 0) return [];
+  const children = new Map<number, number[]>();
+  for (const line of result.stdout.split("\n")) {
+    const [pidText, parentText] = line.trim().split(/\s+/);
+    const pid = Number(pidText);
+    const parent = Number(parentText);
+    if (!Number.isSafeInteger(pid) || !Number.isSafeInteger(parent)) continue;
+    children.set(parent, [...(children.get(parent) ?? []), pid]);
+  }
+  const descendants: number[] = [];
+  const visit = (parent: number) => {
+    for (const pid of children.get(parent) ?? []) {
+      visit(pid);
+      descendants.push(pid);
+    }
+  };
+  visit(rootPid);
+  return descendants;
+}
+
 function signalHermesProcess(
   child: ReturnType<typeof spawn>,
   signal: NodeJS.Signals,
@@ -1394,6 +1422,18 @@ function signalHermesProcess(
     try {
       process.kill(-child.pid, signal);
       return true;
+    } catch (error) {
+      const code = (error as NodeJS.ErrnoException).code;
+      if (code !== "ESRCH" && code !== "EPERM") throw error;
+      if (code === "EPERM") {
+        const descendants = processDescendants(child.pid);
+        hermesDescendants.set(child, descendants);
+      }
+    }
+  }
+  for (const pid of hermesDescendants.get(child) ?? []) {
+    try {
+      process.kill(pid, signal);
     } catch (error) {
       if ((error as NodeJS.ErrnoException).code !== "ESRCH") throw error;
     }
