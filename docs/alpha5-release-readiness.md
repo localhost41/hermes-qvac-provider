@@ -13,7 +13,7 @@ No package publication, tag, dist-tag change, or upstream contact is authorized 
 - TypeScript: 82/82 tests before final packaging pass.
 - Python: 24/24 tests.
 - Lint, type checking, metadata drift, and diff hygiene: pass.
-- The committed candidate packed to 47,646 bytes (175,651 bytes unpacked, 25 entries) with SHA-256 `7b1dccbacab773018128a16014a9495e14f23569e89d86eda39788e67652e2ef`.
+- The committed candidate packed to 47,805 bytes (176,142 bytes unpacked, 25 entries) with SHA-256 `d28b57fac6edb396a33939fe33725848524f66b2440fbdc6007c39d0c1fc1384`.
 - The packed tarball passed isolated Hermes 0.18.2 installation, copied setup, discovery, doctor, real transport smoke, idempotent upgrade, owned uninstall, and post-uninstall discovery/cleanup. The source checkout was not used at runtime.
 - A fresh isolated Hermes home loaded the source candidate and completed managed 9B+2B outcome-verified tool smoke.
 - Five additional warm-server 9B trials independently verified `qvac-proof.txt` with exact content `QVAC-HERMES-OK`: 5/5 pass, 148–152 seconds each.
