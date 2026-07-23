@@ -179,8 +179,11 @@ Engineering evidence:
 - [Hermes host conformance](docs/hermes-host-conformance.md)
 - [QVAC conformance report](docs/qvac-conformance-report.md)
 - [model experience](docs/model-experience-2026-07-22.md)
+- [resilience and soak](docs/resilience-soak-report.md)
 - [moderator architecture](docs/moderator-architecture.md)
 - [security and privacy](docs/security.md)
+- [artifact and supply-chain evidence](docs/artifact-and-supply-chain.md)
+- [maintenance contract](docs/maintenance.md)
 - [contributing](CONTRIBUTING.md)
 
 Legacy `scripts/install.sh`, `scripts/doctor.sh`, and `scripts/start-qvac.sh` remain as thin compatibility wrappers around the authoritative CLI; they no longer implement a separate manual lifecycle.

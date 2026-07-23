@@ -36,10 +36,16 @@
   "files": [
     "__init__.py",
     "dist",
-    "docs",
-    "examples",
+    "docs/architecture-notes.md",
+    "docs/compatibility.md",
+    "docs/configuration.md",
+    "docs/hermes-host-conformance.md",
+    "docs/security.md",
+    "examples/hermes-qvac-demo.mjs",
     "qvac_provider/__init__.py",
-    "scripts",
+    "scripts/doctor.sh",
+    "scripts/install.sh",
+    "scripts/start-qvac.sh",
     "plugin.yaml",
     "README.md",
     "CONTRIBUTING.md",
@@ -65,6 +71,8 @@
     "verify:hermes": "node scripts/verify-real-hermes.mjs",
     "verify:qvac": "node scripts/qvac-conformance.mjs",
     "verify:acceptance": "node scripts/moderator-acceptance.mjs",
+    "verify:artifact": "node scripts/artifact-provenance.mjs",
+    "verify:soak": "node scripts/resilience-soak.mjs",
     "smoke:transport": "node dist/cli.js smoke --transport-only"
   },
   "dependencies": {
@@ -79,5 +87,11 @@
     "typescript": "^5.9.0",
     "vitest": "^4.0.0"
   },
-  "packageManager": "pnpm@11.10.0"
+  "packageManager": "pnpm@11.10.0",
+  "directories": {
+    "doc": "docs",
+    "example": "examples",
+    "test": "tests"
+  },
+  "author": ""
 }

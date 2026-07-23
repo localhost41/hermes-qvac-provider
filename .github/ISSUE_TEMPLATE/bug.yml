@@ -1,0 +1,44 @@
+name: Bug report
+description: Report a reproducible plugin, Hermes, or QVAC integration defect
+title: "[bug] "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Never include API keys, credentials, private prompts, or unsanitized home paths.
+  - type: dropdown
+    id: boundary
+    attributes:
+      label: Suspected boundary
+      options:
+        - Plugin installation or lifecycle
+        - Hermes host or tool behavior
+        - QVAC server or model behavior
+        - Unknown
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: Include exact commands, expected behavior, actual behavior, and bounded timeout used.
+    validations:
+      required: true
+  - type: textarea
+    id: versions
+    attributes:
+      label: Versions and platform
+      description: Hermes, plugin, QVAC, Node, Python, OS, and architecture.
+    validations:
+      required: true
+  - type: textarea
+    id: doctor
+    attributes:
+      label: Sanitized doctor output
+      description: Paste `hermes-qvac doctor --json` after checking it contains no secrets or private paths.
+      render: json
+  - type: textarea
+    id: logs
+    attributes:
+      label: Bounded sanitized logs
+      description: Include only the relevant tail, status/finish reason, timing, and exit code.

@@ -12,7 +12,7 @@
 | Python profile | 3.11–3.13 CI matrix; real Hermes Python 3.11 |
 | OS | macOS and Linux CI targets; local release-candidate validation on macOS arm64 |
 
-Hermes currently has no stable third-party ProviderProfile version contract published independently of Hermes releases. The profile filters optional constructor fields by the inspected signature, but it does not suppress constructor failures. Hermes 0.18.2 is the fully verified live-inference host version. Hermes `v2026.7.20` (0.19.0) and the recorded `main` snapshot pass packed-plugin discovery, profile import, diagnostics, lifecycle, and real-host transport smoke; live QVAC inference on those lanes is still pending. `doctor` performs an actual subclass import so an incompatible future host fails visibly. Exact revisions and scope are in [Hermes host conformance](hermes-host-conformance.md).
+Hermes currently has no stable third-party ProviderProfile version contract published independently of Hermes releases. The profile filters optional constructor fields by the inspected signature, but it does not suppress constructor failures. Hermes 0.18.2 is the original fully verified live-inference host version. Hermes `v2026.7.20` (0.19.0) and the recorded `main` snapshot also pass packed-plugin discovery, profile import, diagnostics, lifecycle, real-host transport smoke, and live QVAC 0.8.1 inference. `doctor` performs an actual subclass import so an incompatible future host fails visibly. Exact revisions and scope are in [Hermes host conformance](hermes-host-conformance.md).
 
 The package engine range is Node `>=22 <27`, matching the current pnpm toolchain and the versions exercised by CI. The Python source and current Hermes host require Python 3.11 or newer; CI covers 3.11–3.13.
 

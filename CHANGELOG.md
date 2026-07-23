@@ -18,6 +18,8 @@
 - Add release metadata verification and record the macOS clean-room, live-inference, concurrency, tool-use, and known-limitation evidence.
 - Add bounded QVAC protocol conformance and moderator clean-room acceptance harnesses.
 - Record packed-plugin compatibility with Hermes 0.19.0 and current `main`, plus session-resume and adverse-stream ownership findings.
+- Minimize the npm payload, add reproducible provenance/SBOM gates, pin workflow actions, and add dependency/CodeQL review.
+- Add bounded live request, concurrency, restart, setup, upgrade, uninstall, and reinstall soak evidence.
 
 ## v0.1.0-alpha.3 - 2026-07-19
 
