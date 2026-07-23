@@ -17,15 +17,19 @@ demonstrated macOS alpha path.
 
 | Field | Value |
 | --- | --- |
-| Candidate commit | `76bea05` (final checksum to be recomputed after hosted gates) |
+| Candidate payload commit | `7c39c0143f2ae31fab8c0cd9c31113f4cfa0a376` |
 | Package | `@localhost41/hermes-qvac-provider@0.1.0-alpha.4` |
-| Payload | 25 files; tests/internal reports/workflows/models/caches excluded |
+| Payload | 25 files; 44,988 bytes packed; 164,856 bytes unpacked |
+| Tarball SHA-256 | `d21331ed56fa159056c6bd633837e4234c59e14c66c8454d92da087e4c889215` |
+| npm shasum | `b0904a59aab4762d6a19cc7060e3463e804980e8` |
+| npm integrity | `sha512-R1qRM7UoiKT9w6C9Zx39qB76huzYriJpbb02dkmeGo2GT70kzInnpTT1F2SjTOIXE9AR0PA376GjUFQxiPqQGA==` |
 | SBOM | CycloneDX 1.6, 272 components, SHA-256 `17c056ec308f68598568a89586ef935b5db2a5898e23126bc88385a6a7ff7317` |
 | Production audit | 0 info/low/moderate/high/critical findings |
 | Licenses observed | Apache-2.0 122; MIT 128; ISC 11; BlueOak 5; BSD-3-Clause 3; Python-2.0 1; dual AFL-2.1/BSD-3-Clause 1 |
 
-The final tarball SHA-256, npm integrity, exact byte sizes, and clean commit are
-recorded after the last implementation commit and successful hosted rerun.
+The provenance gate ran from a clean worktree after the last packaged
+implementation change. This report and its moderator packets are excluded from
+the npm allowlist, so recording the evidence does not alter the payload.
 
 ## Gates
 
@@ -35,6 +39,8 @@ recorded after the last implementation commit and successful hosted rerun.
   manifest parse, production audit, and diff hygiene: pass locally.
 - Node 22/24/26 and Python 3.11/3.12/3.13: hosted matrix configured.
 - CodeQL JavaScript/TypeScript and Python: pass on the first security run.
+- Final hosted CI: macOS Node 22/Python 3.11 and Linux Node 22/24/26 with Python
+  3.11/3.12/3.13 all pass; the macOS process-tree regression is green.
 - Packed Hermes 0.19.0 release and `main`: discovery, profile, doctor, transport,
   live inference, upgrade, uninstall, and cleanup pass.
 - Live QVAC protocol: 8/8 required cases on 0.8B and 9B; independent 0.8.0 lane
