@@ -44,12 +44,23 @@ function parseArgs(argv) {
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
     if (arg === "--keep-on-failure") options.keepOnFailure = true;
-    else if (["--tarball", "--hermes-bin", "--hermes-source", "--hermes-python"].includes(arg)) {
+    else if (
+      [
+        "--tarball",
+        "--hermes-bin",
+        "--hermes-source",
+        "--hermes-python",
+        "--live-base-url",
+        "--live-model",
+      ].includes(arg)
+    ) {
       const value = argv[++index];
       if (!value) throw new TypeError(`${arg} requires a value`);
       if (arg === "--tarball") options.tarball = value;
       else if (arg === "--hermes-bin") options.hermesBin = value;
       else if (arg === "--hermes-source") options.hermesSource = resolve(value);
+      else if (arg === "--live-base-url") options.liveBaseURL = value;
+      else if (arg === "--live-model") options.liveModel = value;
       else options.hermesPython = resolve(value);
     } else throw new TypeError(`unknown option: ${arg}`);
   }
@@ -61,6 +72,8 @@ function parseArgs(argv) {
   options.hermesBin = options.hermesBin ?? "hermes";
   if (options.hermesSource && !options.hermesPython)
     throw new TypeError("--hermes-source requires --hermes-python");
+  if (Boolean(options.liveBaseURL) !== Boolean(options.liveModel))
+    throw new TypeError("--live-base-url and --live-model must be provided together");
   return options;
 }
 
@@ -134,6 +147,26 @@ process.exit(result.status ?? 1);
     await run("Real Hermes transport smoke", cli, ["smoke", "--transport-only", "--json"], {
       timeout: 60_000,
     });
+    if (options.liveBaseURL) {
+      await run(
+        "Live Hermes to QVAC inference",
+        cli,
+        [
+          "smoke",
+          "--base-url",
+          options.liveBaseURL,
+          "--model",
+          options.liveModel,
+          "--aux-model",
+          options.liveModel,
+          "--timeout-seconds",
+          "60",
+          "--yes",
+          "--json",
+        ],
+        { timeout: 90_000 },
+      );
+    }
     const upgrade = await run("Idempotent upgrade", cli, ["setup", "--json"]);
     if (!JSON.parse(upgrade.stdout).upgraded)
       throw new Error("repeated setup did not report an upgrade");

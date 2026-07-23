@@ -177,6 +177,8 @@ Engineering evidence:
 - [test inventory](docs/test-inventory.md)
 - [compatibility](docs/compatibility.md)
 - [Hermes host conformance](docs/hermes-host-conformance.md)
+- [QVAC conformance report](docs/qvac-conformance-report.md)
+- [model experience](docs/model-experience-2026-07-22.md)
 - [moderator architecture](docs/moderator-architecture.md)
 - [security and privacy](docs/security.md)
 - [contributing](CONTRIBUTING.md)

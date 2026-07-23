@@ -10,14 +10,16 @@ discovery disappeared.
 | Hermes lane | Source revision | Python | Result | Scope |
 | --- | --- | --- | --- | --- |
 | 0.18.2 | `e361c5e20402375c74a65ca52810c6a380461226` | 3.11.15 | Pass | Existing live-inference baseline plus packed acceptance |
-| v2026.7.20 / 0.19.0 | `3ef6bbd201263d354fd83ec55b3c306ded2eb72a` | 3.11.15 | Pass | Packed acceptance and real transport smoke |
-| `main` snapshot | `3f9944bad92ed00f9116cfbad6326cceecb39151` | 3.11.15 | Pass | Packed acceptance and real transport smoke |
+| v2026.7.20 / 0.19.0 | `3ef6bbd201263d354fd83ec55b3c306ded2eb72a` | 3.11.15 | Pass | Packed acceptance, transport smoke, and live QVAC 0.8.1 inference |
+| `main` snapshot | `3f9944bad92ed00f9116cfbad6326cceecb39151` | 3.11.15 | Pass | Packed acceptance, transport smoke, and live QVAC 0.8.1 inference |
 
 The release and `main` lanes reused an already installed compatible Hermes
 Python environment while loading the exact checked-out Hermes source through
 `PYTHONPATH`. They therefore prove source/profile compatibility, discovery, and
 transport behavior, but are not claims that Hermes' installer itself was tested.
-Only the 0.18.2 lane has completed live QVAC inference so far.
+The two newer lanes each returned exact `pong` through a packed plugin and a
+cached Qwen3.5 0.8B model. Hermes itself was loaded from each exact source
+revision; the plugin was loaded only from the tarball installation.
 
 The acceptance runner is:
 
@@ -25,12 +27,14 @@ The acceptance runner is:
 node scripts/moderator-acceptance.mjs \
   --tarball /absolute/path/to/localhost41-hermes-qvac-provider-0.1.0-alpha.4.tgz \
   --hermes-source /absolute/path/to/hermes-agent \
-  --hermes-python /absolute/path/to/python
+  --hermes-python /absolute/path/to/python \
+  --live-base-url http://127.0.0.1:11434/v1 \
+  --live-model qwen3.5-0.8b
 ```
 
 It emits a sanitized JSON report and never reads the user's existing Hermes
-configuration. Model-backed validation is a separate live gate; this runner does
-not download a model or start QVAC without an explicit lifecycle choice.
+configuration. The optional live pair connects only to an already running QVAC
+endpoint; the runner never downloads a model or starts QVAC itself.
 
 ## Adverse transport boundary
 

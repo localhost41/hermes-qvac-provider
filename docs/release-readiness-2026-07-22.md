@@ -27,7 +27,7 @@ listed below.
 
 | Gate | Command | Result |
 | --- | --- | --- |
-| TypeScript, integration, lifecycle | `pnpm test` | PASS: 75 tests in 4 files |
+| TypeScript, integration, lifecycle | `pnpm test` | PASS: 77 tests in 4 files |
 | Python provider and scripts | `pnpm test:python` | PASS: 24 tests |
 | Type checking and formatting | `pnpm lint` | PASS |
 | Build | `pnpm build` | PASS |
@@ -56,6 +56,7 @@ normal Hermes configuration.
 | --- | --- | --- | --- | --- |
 | Source candidate, copied install | PASS; enabled as user model-provider 0.1.0-alpha.3 at test time | PASS; real Hermes returned `pong` | PASS | PASS; ownership-aware uninstall removed discovery |
 | Candidate npm tarball | PASS in isolated npm consumer | PASS with fake QVAC lifecycle and real Hermes transport | PASS | PASS |
+| Candidate npm tarball with Hermes 0.19.0 release and `main` | PASS in two isolated homes | PASS; each returned live QVAC `pong` through the packed plugin | PASS | PASS; discovery disappeared |
 | Published `@alpha` (0.1.0-alpha.3) | PASS; copied plugin discovered | PASS after explicitly enabling the plugin | Repeat copy PASS | Manual directory removal did not clear Hermes' remembered disabled listing |
 
 The source clean-room test preceded the candidate version bump to alpha.4; the
@@ -71,6 +72,7 @@ behavior is already published.
 | QVAC `/v1/models` | PASS | Strict parsing rejects non-2xx, malformed JSON, wrong shapes, and missing configured models |
 | Direct QVAC non-streamed completion | PASS | 1B validation model returned `Pong.` promptly |
 | Real Hermes one-shot, explicit QVAC | PASS | Qwen3.5 9B returned `pong` through the plugin |
+| Packed plugin with Hermes 0.19.0 and `main` | PASS | Both exact source revisions returned `pong` through QVAC 0.8.1 and cached Qwen3.5 0.8B |
 | External endpoint/custom model alias | PASS | `qvac-local` accepted only in external mode and returned `pong` |
 | 50 sequential Hermes requests | PASS | 50/50, approximately 163 seconds total |
 | 10 concurrent Hermes requests | PASS | 10/10 |
