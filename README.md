@@ -170,6 +170,7 @@ The test suite covers full generated QVAC configuration, main/aux preload, lifec
 Engineering evidence:
 
 - [architecture](docs/architecture-notes.md)
+- [moderator architecture map](docs/moderator-architecture.md)
 - [OpenClaw parity matrix](docs/openclaw-parity.md)
 - [requirements traceability](docs/requirements-traceability.md)
 - [threat and failure model](docs/threat-model.md)

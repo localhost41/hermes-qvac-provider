@@ -8,11 +8,11 @@
 | `@qvac/openclaw-plugin` reference | 0.1.1 plus QVAC source HEAD `af187820621943a77912867c32e44ab493a36556` |
 | `@qvac/ai-sdk-provider` | 0.3.0 |
 | `@qvac/cli` | 0.8.1 |
-| Node | 20, 22, 24, 26 |
+| Node | 22, 24, 26 |
 | Python profile | 3.11–3.13 CI matrix; real Hermes Python 3.11 |
 | OS | macOS and Linux CI targets; local release-candidate validation on macOS arm64 |
 
-Hermes currently has no stable third-party ProviderProfile version contract published independently of Hermes releases. The profile filters optional constructor fields by the inspected signature, but it does not suppress constructor failures. Hermes 0.18.2 is the fully verified host version. `doctor` performs an actual subclass import so an incompatible future host fails visibly.
+Hermes currently has no stable third-party ProviderProfile version contract published independently of Hermes releases. The profile filters optional constructor fields by the inspected signature, but it does not suppress constructor failures. Hermes 0.18.2 is the fully verified live-inference host version. Hermes `v2026.7.20` and current `main` are compatibility lanes until their packed-plugin checks are recorded; they are not silently promoted to fully supported. `doctor` performs an actual subclass import so an incompatible future host fails visibly.
 
 The package engine range is Node `>=22 <27`, matching the current pnpm toolchain and the versions exercised by CI. The Python source and current Hermes host require Python 3.11 or newer; CI covers 3.11–3.13.
 

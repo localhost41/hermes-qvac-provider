@@ -1,10 +1,26 @@
 #!/usr/bin/env node
 import { readFileSync } from "node:fs";
+import { qvacCatalog } from "@qvac/ai-sdk-provider/models";
 
 const packageJson = JSON.parse(readFileSync("package.json", "utf8"));
 const manifest = readFileSync("plugin.yaml", "utf8");
 const readme = readFileSync("README.md", "utf8");
 const changelog = readFileSync("CHANGELOG.md", "utf8");
+const compatibility = readFileSync("docs/compatibility.md", "utf8");
+const configuration = readFileSync("docs/configuration.md", "utf8");
+const releaseReadiness = readFileSync(
+  "docs/release-readiness-2026-07-22.md",
+  "utf8",
+);
+const pythonProvider = readFileSync("qvac_provider/__init__.py", "utf8");
+
+function requireMatch(text, pattern, message) {
+  if (!pattern.test(text)) throw new Error(message);
+}
+
+function yamlScalar(text, key) {
+  return text.match(new RegExp(`^\\s*${key}:\\s*([^#\\n]+?)\\s*$`, "m"))?.[1];
+}
 
 const manifestVersion = manifest.match(/^version:\s*(\S+)\s*$/m)?.[1];
 if (manifestVersion !== packageJson.version) {
@@ -22,4 +38,74 @@ if (!/^kind:\s*model-provider\s*$/m.test(manifest)) {
   throw new Error("plugin.yaml is not a Hermes model-provider manifest");
 }
 
-console.log(`ok - release metadata agrees on ${packageJson.version}`);
+const supportedNode = "22, 24, 26";
+if (packageJson.engines?.node !== ">=22 <27") {
+  throw new Error(`unexpected Node engine range: ${packageJson.engines?.node}`);
+}
+requireMatch(readme, /^- Node 22–26$/m, "README Node support drifted");
+requireMatch(
+  compatibility,
+  new RegExp(`^\\| Node \\| ${supportedNode} \\|$`, "m"),
+  "compatibility Node matrix drifted",
+);
+if (/Node 20(?:\b|–|-)/.test(`${readme}\n${compatibility}`)) {
+  throw new Error("maintained support docs still claim Node 20");
+}
+
+const defaults = {
+  model: yamlScalar(manifest, "default_model"),
+  auxModel: yamlScalar(manifest, "default_aux_model"),
+  maxTokens: Number(yamlScalar(manifest, "default_max_tokens")),
+  contextWindow: Number(yamlScalar(manifest, "context_window")),
+};
+if (!qvacCatalog.some((entry) => entry.id === defaults.model)) {
+  throw new Error(`default model is absent from official catalog: ${defaults.model}`);
+}
+if (!qvacCatalog.some((entry) => entry.id === defaults.auxModel)) {
+  throw new Error(
+    `default auxiliary model is absent from official catalog: ${defaults.auxModel}`,
+  );
+}
+for (const [label, value] of [
+  ["Main model", defaults.model],
+  ["Auxiliary model", defaults.auxModel],
+  ["Context", String(defaults.contextWindow)],
+  ["Maximum output", String(defaults.maxTokens)],
+]) {
+  requireMatch(
+    readme,
+    new RegExp(`^- ${label}: .*${value}`, "m"),
+    `README ${label.toLowerCase()} drifted`,
+  );
+}
+requireMatch(
+  configuration,
+  new RegExp(
+    "\\\\| Context \\\\|[^\\\\n]+\\\\| `" + defaults.contextWindow + "` \\\\|",
+  ),
+  "configuration context default drifted",
+);
+requireMatch(
+  pythonProvider,
+  new RegExp(`^DEFAULT_MAX_TOKENS = ${defaults.maxTokens}$`, "m"),
+  "Python maximum-token default drifted",
+);
+requireMatch(
+  pythonProvider,
+  new RegExp(`^DEFAULT_CONTEXT_WINDOW = ${defaults.contextWindow}$`, "m"),
+  "Python context default drifted",
+);
+requireMatch(
+  releaseReadiness,
+  new RegExp(`Candidate package.*${packageJson.version}`),
+  "release report candidate version drifted",
+);
+requireMatch(
+  compatibility,
+  /^\| Python profile \| 3\.11–3\.13 CI matrix; real Hermes Python 3\.11 \|$/m,
+  "Python compatibility claim drifted",
+);
+
+console.log(
+  `ok - release metadata agrees on ${packageJson.version}; Node ${supportedNode}; ${qvacCatalog.length} official models`,
+);
