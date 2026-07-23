@@ -97,3 +97,37 @@ jobs:
         run: |
           PYTHONPATH="$PWD:$HERMES_SOURCE" python -c "from providers.base import ProviderProfile; import qvac_provider; assert isinstance(qvac_provider.PROVIDER_PROFILE, ProviderProfile)"
           git -C "$HERMES_SOURCE" rev-parse HEAD
+
+  linux-packed-hermes-transport:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa # v4
+        with:
+          version: 11.10.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.11"
+      - name: Install supported Hermes release
+        run: |
+          git clone --depth 1 --branch v2026.7.20 https://github.com/NousResearch/hermes-agent.git "$RUNNER_TEMP/hermes-agent"
+          python -m pip install "$RUNNER_TEMP/hermes-agent"
+      - name: Install and pack candidate
+        run: |
+          pnpm install --frozen-lockfile
+          npm pack --pack-destination "$RUNNER_TEMP"
+      - name: Run packed Linux Hermes acceptance
+        env:
+          HERMES_SOURCE: ${{ runner.temp }}/hermes-agent
+        run: |
+          tarball=$(find "$RUNNER_TEMP" -maxdepth 1 -type f -name 'localhost41-hermes-qvac-provider-*.tgz' -print -quit)
+          hermes_python=$(command -v python)
+          test -n "$tarball"
+          node scripts/moderator-acceptance.mjs \
+            --tarball "$tarball" \
+            --hermes-source "$HERMES_SOURCE" \
+            --hermes-python "$hermes_python"
