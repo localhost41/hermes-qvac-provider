@@ -100,7 +100,7 @@ See [configuration.md](docs/configuration.md) for every CLI option and environme
 - Hermes request timeout: 300 seconds
 - API marker: `custom-local`
 
-The marker satisfies OpenAI-compatible clients but does not enable authentication on a managed QVAC 0.8.1 server. Managed QVAC remains loopback-only. Use a separately managed authenticated endpoint when bearer enforcement is required; the current official managed-provider API does not expose QVAC CLI's `--api-key` server option.
+The marker satisfies OpenAI-compatible clients but does not enable authentication on a managed QVAC 0.8.1 server. Managed QVAC remains loopback-only. When bearer enforcement is required, start QVAC separately with its supported `serve openai --api-key` option and use the external mode below. The current official managed-provider API does not expose that server option.
 
 `hermes-qvac status` treats a healthy stopped managed installation as success and reports `state: "stopped"`. Monitoring that requires a live endpoint should use `hermes-qvac status --require-running`.
 
@@ -119,11 +119,15 @@ Run `hermes-qvac models` for the authoritative model list and SDK mappings. The 
 To use a server you already manage:
 
 ```bash
-QVAC_BASE_URL=http://127.0.0.1:19000/v1 \
+export QVAC_API_KEY='replace-with-a-private-value'
+# In a separate terminal, using your verified QVAC model/configuration:
+qvac serve openai --model qvac-local --port 19000 --api-key "$QVAC_API_KEY"
+
+QVAC_BASE_URL=http://127.0.0.1:19000/v1 QVAC_API_KEY="$QVAC_API_KEY" \
   hermes-qvac run --external --model qwen3.5-9b -- --cli
 ```
 
-The CLI authenticates the `/models` probe when an API key is configured and refuses to launch Hermes unless the endpoint advertises the selected model.
+Replace `qvac-local` and the Hermes model alias with names configured and advertised by your server. The CLI authenticates the `/models` probe, passes the key only through the Hermes child environment, redacts it from captured diagnostics, and refuses to launch Hermes unless the endpoint advertises the selected model.
 
 ## Smoke tests
 

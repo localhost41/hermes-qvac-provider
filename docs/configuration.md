@@ -9,7 +9,7 @@ Precedence is CLI option, environment variable, saved configuration, then defaul
 | Host | `--host` | `QVAC_HOST` | `127.0.0.1` | Only `127.0.0.1` and `localhost` are accepted. |
 | Port | `--port` | `QVAC_PORT` | automatic | Pin only when another process is not using it. |
 | Existing endpoint | `--base-url` | `QVAC_BASE_URL` | unset | HTTP(S), no embedded credentials/query/fragment, path ending in `/v1`. Selects external mode. |
-| API marker | `--api-key` | `QVAC_API_KEY` | `custom-local` | Sent as a Bearer marker and redacted when non-default. Managed QVAC 0.8.1 does not enforce it because the official managed-provider API does not expose the CLI's server-auth option. |
+| API key/marker | `--api-key` | `QVAC_API_KEY` | `custom-local` | Authenticates probes and Hermes requests in external mode and is redacted from captured diagnostics. It is only a client marker in managed mode because the official managed-provider API does not expose the CLI's server-auth option. |
 | QVAC executable | `--bin` | `QVAC_BIN` | bundled `@qvac/cli` | Absolute path recommended. |
 | Working directory | `--cwd` | `QVAC_CWD` | current directory | Requires `--no-reuse` because upstream fleet identity does not include cwd. |
 | Context | `--ctx-size` | `QVAC_CTX_SIZE` | `32768` | Positive integer, applied to every catalog entry. |

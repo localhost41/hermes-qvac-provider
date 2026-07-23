@@ -349,7 +349,7 @@ describe("official managed lifecycle integration", () => {
       hermesBin,
       `#!/usr/bin/env node
 import { writeFileSync } from "node:fs";
-writeFileSync(process.env.HERMES_LOG, JSON.stringify({ args: process.argv.slice(2), baseURL: process.env.QVAC_BASE_URL }));
+writeFileSync(process.env.HERMES_LOG, JSON.stringify({ args: process.argv.slice(2), baseURL: process.env.QVAC_BASE_URL, apiKey: process.env.QVAC_API_KEY }));
 `,
       { mode: 0o755 },
     );
@@ -363,7 +363,9 @@ writeFileSync(process.env.QVAC_MARKER, "started");
     );
     await chmod(hermesBin, 0o755);
     await chmod(qvacBin, 0o755);
-    const server = createHttpServer((_request, response) => {
+    const authorization: Array<string | undefined> = [];
+    const server = createHttpServer((request, response) => {
+      authorization.push(request.headers.authorization);
       response.setHeader("content-type", "application/json");
       response.end('{"data":[{"id":"qwen3.5-9b"},{"id":"qwen3.5-2b"}]}');
     });
@@ -383,14 +385,25 @@ writeFileSync(process.env.QVAC_MARKER, "started");
     };
     try {
       const result = await runCli(
-        ["run", "--external", "--base-url", baseURL, "--bin", qvacBin],
+        [
+          "run",
+          "--external",
+          "--base-url",
+          baseURL,
+          "--api-key",
+          "external-secret",
+          "--bin",
+          qvacBin,
+        ],
         env,
       );
       expect(result.code, result.stderr).toBe(0);
       expect(JSON.parse(await readFile(hermesLog, "utf8"))).toMatchObject({
         baseURL,
+        apiKey: "external-secret",
         args: ["--provider", "qvac", "-m", "qwen3.5-9b"],
       });
+      expect(authorization).toEqual(["Bearer external-secret"]);
       await expect(access(qvacMarker)).rejects.toThrow();
     } finally {
       await new Promise<void>((resolvePromise, reject) =>
