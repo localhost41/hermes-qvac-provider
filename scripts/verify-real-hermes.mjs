@@ -23,7 +23,12 @@ async function runCase(name, fixtureOptions, expectation, processTimeoutMs = 8_0
       processTimeoutMs,
     );
     expectation(result);
-    results.push({ name, code: result.code, response: result.stdout.trim() });
+    results.push({
+      name,
+      code: result.code,
+      response: result.stdout.trim(),
+      termination: result.terminationReason ?? "natural-exit",
+    });
   } finally {
     await fixture.close();
   }
@@ -41,18 +46,23 @@ try {
     // Hermes 0.18.2 may exit zero after reporting a transport error. The
     // hermes-qvac smoke command therefore gates success on the exact response.
     assert.ok(result.code !== 0 || result.stdout.trim() !== "pong");
+    assert.ok(result.code !== 124 || result.terminationReason);
   });
   await runCase("malformed SSE", { malformedSse: true }, (result) => {
     assert.ok(result.code !== 0 || result.stdout.trim() !== "pong");
+    assert.ok(result.code !== 124 || result.terminationReason);
   });
   await runCase("connection close", { closeEarly: true }, (result) => {
     assert.ok(result.code !== 0 || result.stdout.trim() !== "pong");
+    assert.ok(result.code !== 124 || result.terminationReason);
   });
   await runCase("delayed timeout", { delayMs: 2_500 }, (result) => {
     assert.ok(result.code !== 0 || result.stdout.trim() !== "pong");
+    assert.ok(result.code !== 124 || result.terminationReason);
   }, 5_000);
   await runCase("non-stream response", { nonStreaming: true }, (result) => {
     assert.ok(result.code !== 0 || result.stdout.trim() !== "pong");
+    assert.ok(result.code !== 124 || result.terminationReason);
   });
   process.stdout.write(`${JSON.stringify({ ok: true, isolatedHermesHome: true, cases: results }, null, 2)}\n`);
 } finally {

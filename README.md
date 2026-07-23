@@ -176,6 +176,8 @@ Engineering evidence:
 - [threat and failure model](docs/threat-model.md)
 - [test inventory](docs/test-inventory.md)
 - [compatibility](docs/compatibility.md)
+- [Hermes host conformance](docs/hermes-host-conformance.md)
+- [moderator architecture](docs/moderator-architecture.md)
 - [security and privacy](docs/security.md)
 - [contributing](CONTRIBUTING.md)
 

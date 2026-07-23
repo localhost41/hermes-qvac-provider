@@ -22,6 +22,11 @@ Precedence is CLI option, environment variable, saved configuration, then defaul
 
 Boolean environment values accept `true/false`, `1/0`, `yes/no`, and `on/off` case-insensitively.
 
+`HERMES_PYTHON` is a diagnostic-only override used by `doctor` when an
+official manual Hermes source installation keeps its Python environment
+outside the checkout. It must be an absolute interpreter path and is never
+saved by `hermes-qvac config`.
+
 Reads accept only regular non-symlink files no larger than 64 KiB. Writes persist only explicit saved overrides, use unique adjacent temporary files, mode `0600`, and atomic rename; the containing configuration directory is a real non-symlink directory with mode `0700`. Concurrent writers cannot produce partial JSON. Their documented conflict behavior is last completed atomic rename wins, so orchestration should serialize logically related field updates.
 
 Examples:

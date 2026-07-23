@@ -63,6 +63,8 @@
     "verify:package": "bash scripts/verify-package.sh",
     "verify:metadata": "node scripts/verify-metadata.mjs",
     "verify:hermes": "node scripts/verify-real-hermes.mjs",
+    "verify:qvac": "node scripts/qvac-conformance.mjs",
+    "verify:acceptance": "node scripts/moderator-acceptance.mjs",
     "smoke:transport": "node dist/cli.js smoke --transport-only"
   },
   "dependencies": {

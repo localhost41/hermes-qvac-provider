@@ -16,6 +16,8 @@
 - Expand the release-candidate evidence with requirements traceability, a threat/failure model, test inventory, compatibility/security guidance, adverse real-Hermes transport verification, and packed-product command coverage.
 - Accept server-advertised custom model aliases for external endpoints while keeping managed QVAC runs restricted to the official catalog.
 - Add release metadata verification and record the macOS clean-room, live-inference, concurrency, tool-use, and known-limitation evidence.
+- Add bounded QVAC protocol conformance and moderator clean-room acceptance harnesses.
+- Record packed-plugin compatibility with Hermes 0.19.0 and current `main`, plus session-resume and adverse-stream ownership findings.
 
 ## v0.1.0-alpha.3 - 2026-07-19
 

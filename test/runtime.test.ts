@@ -17,6 +17,7 @@ import {
   clearServeState,
   createManagedModels,
   createSessionControl,
+  doctor,
   endpointModels,
   estimatedPreloadBytes,
   installPlugin,
@@ -51,6 +52,26 @@ describe("official QVAC catalog", () => {
     await expect(
       startManaged({ ...DEFAULT_CONFIG, model: "definitely-not-a-qvac-model" }),
     ).rejects.toThrow("Unknown model");
+  });
+
+  it("returns a complete OpenAI stream with one terminal outcome", async () => {
+    const fixture = await withMockQvac();
+    try {
+      const response = await fetch(`${fixture.baseURL}/chat/completions`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          model: DEFAULT_CONFIG.model,
+          messages: [{ role: "user", content: "ping" }],
+          stream: true,
+        }),
+      });
+      const body = await response.text();
+      expect(body.match(/finish_reason":"stop"/g)).toHaveLength(1);
+      expect(body.match(/data: \[DONE\]/g)).toHaveLength(1);
+    } finally {
+      await fixture.close();
+    }
   });
 
   it("configures the full catalog and preloads main plus auxiliary models", () => {
@@ -96,6 +117,57 @@ describe("official QVAC catalog", () => {
 });
 
 describe("Hermes plugin installation", () => {
+  it("uses an explicit Hermes Python runtime for manual source installations", async () => {
+    const home = await mkdtemp(join(tmpdir(), "hermes-qvac-test-"));
+    const bin = await mkdtemp(join(tmpdir(), "hermes-qvac-bin-"));
+    const fixture = await withMockQvac();
+    const hermes = join(bin, "hermes");
+    const python = join(bin, "hermes-python");
+    const source = join(home, "manual-hermes-source");
+    await mkdir(source);
+    await writeFile(
+      hermes,
+      `#!/usr/bin/env bash\nif [[ "$1" == "--version" ]]; then printf "Hermes Agent v0.19.0\\nInstall directory: ${source}\\n"; else printf "enabled qvac 0.1.0-alpha.4 copied\\n"; fi\n`,
+      { mode: 0o755 },
+    );
+    const profile = {
+      class: "QvacProviderProfile",
+      provider_profile: true,
+      name: "qvac",
+      aliases: ["local-qvac", "qvac-local"],
+      base_url: fixture.baseURL,
+      models_url: "",
+      supports_vision: true,
+      fallback_models: listModels().map((model) => model.id),
+      default_model: "qwen3.5-9b",
+      default_aux_model: "qwen3.5-2b",
+      default_max_tokens: 8192,
+      context_window: 32768,
+    };
+    await writeFile(
+      python,
+      `#!/usr/bin/env bash\nprintf '%s\\n' '${JSON.stringify(profile)}'\n`,
+      { mode: 0o755 },
+    );
+    const env = {
+      HERMES_HOME: home,
+      HERMES_PYTHON: python,
+      PATH: `${bin}:${process.env.PATH ?? ""}`,
+    };
+    try {
+      await installPlugin(env);
+      const result = await doctor(
+        { ...DEFAULT_CONFIG, baseURL: fixture.baseURL },
+        env,
+      );
+      expect(
+        result.checks.find((check) => check.name === "provider-profile"),
+      ).toMatchObject({ ok: true, required: true });
+    } finally {
+      await fixture.close();
+    }
+  });
+
   it("installs, upgrades, and removes only an owned plugin", async () => {
     const home = await mkdtemp(join(tmpdir(), "hermes-qvac-test-"));
     const env = { HERMES_HOME: home };

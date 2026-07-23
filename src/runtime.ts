@@ -891,6 +891,9 @@ function hermesProfileState(
         "Hermes version output did not expose its install directory, so ProviderProfile loading could not be verified",
     };
   const candidates = [
+    ...(env.HERMES_PYTHON && isAbsolute(env.HERMES_PYTHON)
+      ? [env.HERMES_PYTHON]
+      : []),
     join(installDir, "venv", "bin", "python"),
     join(installDir, "venv", "Scripts", "python.exe"),
   ];
@@ -898,7 +901,7 @@ function hermesProfileState(
   if (!python)
     return {
       ok: false,
-      detail: `Hermes Python runtime was not found below ${installDir}`,
+      detail: `Hermes Python runtime was not found below ${installDir}; set HERMES_PYTHON to the absolute interpreter path for an official manual installation`,
     };
   const script = [
     "import json",
@@ -1457,7 +1460,12 @@ export function runHermesCaptured(
   },
   env: NodeJS.ProcessEnv = {},
   processTimeoutMs = (config.timeoutSeconds + 15) * 1_000,
-): Promise<{ code: number; stdout: string; stderr: string }> {
+): Promise<{
+  code: number;
+  stdout: string;
+  stderr: string;
+  terminationReason?: string;
+}> {
   return new Promise((resolvePromise, reject) => {
     const child = spawn(
       "hermes",
@@ -1520,6 +1528,7 @@ export function runHermesCaptured(
         stderr: forcedReason
           ? `${stderr}${stderr ? "\n" : ""}${forcedReason}`
           : stderr,
+        ...(forcedReason ? { terminationReason: forcedReason } : {}),
       });
     });
   });
@@ -1567,12 +1576,23 @@ export async function withMockQvac(
           request.socket.destroy();
           return;
         }
-        let stream: boolean | undefined;
+        let requestBody: { stream?: boolean; model?: string };
         try {
-          stream = (JSON.parse(body || "{}") as { stream?: boolean }).stream;
+          requestBody = JSON.parse(body || "{}") as {
+            stream?: boolean;
+            model?: string;
+          };
         } catch {
           response.statusCode = 400;
           response.end(JSON.stringify({ error: "invalid JSON" }));
+          return;
+        }
+        if (
+          requestBody.model &&
+          !(options.models ?? [DEFAULT_MODEL]).includes(requestBody.model)
+        ) {
+          response.statusCode = 404;
+          response.end(JSON.stringify({ error: "model not found" }));
           return;
         }
         const send = () => {
@@ -1582,7 +1602,7 @@ export async function withMockQvac(
             return;
           }
           const text = options.responseText ?? "pong";
-          const useStream = stream && !options.nonStreaming;
+          const useStream = requestBody.stream && !options.nonStreaming;
           response.setHeader(
             "content-type",
             useStream ? "text/event-stream" : "application/json",
@@ -1591,7 +1611,7 @@ export async function withMockQvac(
             response.end(
               options.malformedSse
                 ? "data: definitely-not-json\n\n"
-                : `data: ${JSON.stringify({ choices: [{ delta: { content: text }, index: 0 }] })}\n\ndata: [DONE]\n\n`,
+                : `data: ${JSON.stringify({ choices: [{ delta: { role: "assistant", content: text }, finish_reason: null, index: 0 }] })}\n\ndata: ${JSON.stringify({ choices: [{ delta: {}, finish_reason: "stop", index: 0 }] })}\n\ndata: [DONE]\n\n`,
             );
           else
             response.end(
