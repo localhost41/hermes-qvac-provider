@@ -12,6 +12,7 @@ const releaseReadiness = readFileSync(
   "docs/alpha5-release-readiness.md",
   "utf8",
 );
+const betaReadiness = readFileSync("docs/beta-readiness-plan.md", "utf8");
 const pythonProvider = readFileSync("qvac_provider/__init__.py", "utf8");
 
 function requireMatch(text, pattern, message) {
@@ -47,6 +48,16 @@ requireMatch(
   compatibility,
   new RegExp(`^\\| Node \\| ${supportedNode} \\|$`, "m"),
   "compatibility Node matrix drifted",
+);
+requireMatch(
+  betaReadiness,
+  /QVAC `serve openai --api-key` plus external mode/,
+  "beta plan lost the supported authenticated QVAC boundary",
+);
+requireMatch(
+  betaReadiness,
+  /Change metadata to beta only after every required gate is passed/,
+  "beta promotion rule drifted",
 );
 if (/Node 20(?:\b|–|-)/.test(`${readme}\n${compatibility}`)) {
   throw new Error("maintained support docs still claim Node 20");
