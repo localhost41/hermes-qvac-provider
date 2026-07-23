@@ -1,0 +1,45 @@
+name: QVAC compatibility
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "23 9 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  latest-qvac-packages:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.10.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Check against current official QVAC packages
+        run: |
+          pnpm update @qvac/ai-sdk-provider@latest @qvac/cli@latest --no-save --lockfile=false
+          git diff --exit-code -- package.json pnpm-lock.yaml
+          pnpm lint
+          pnpm test
+          pnpm test:python
+          pnpm verify:package
+      - name: Check the profile against current Hermes source
+        run: |
+          git clone --depth 1 https://github.com/NousResearch/hermes-agent.git "$RUNNER_TEMP/hermes-agent"
+          PYTHONPATH="$PWD:$RUNNER_TEMP/hermes-agent" python -c "from providers.base import ProviderProfile; import qvac_provider; assert isinstance(qvac_provider.PROVIDER_PROFILE, ProviderProfile)"
+      - name: Explain physical smoke boundary
+        run: echo "Real inference is opt-in because it may download a multi-gigabyte model; run hermes-qvac smoke --model qwen3.5-0.8b --yes on a model-capable runner."

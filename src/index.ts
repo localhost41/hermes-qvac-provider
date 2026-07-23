@@ -1,8 +1,34 @@
+import { allModels, qvacCatalog } from "@qvac/ai-sdk-provider/models";
+import { endpointModels } from "./runtime.js";
+
 export const DEFAULT_QVAC_OPENAI_BASE_URL = "http://127.0.0.1:11434/v1";
 export const DEFAULT_QVAC_MODELS_URL = "http://127.0.0.1:11434/v1/models";
 export const DEFAULT_QVAC_API_KEY = "custom-local";
 export const DEFAULT_QVAC_MODEL = "qwen3.5-9b";
 export const DEFAULT_QVAC_SERVER_TIMEOUT_MS = 2_000;
+export {
+  doctor,
+  endpointModels,
+  installPlugin,
+  listModels,
+  setupPlugin,
+  startManaged,
+  uninstallOwnedPlugin,
+  uninstallPlugin,
+} from "./runtime.js";
+export {
+  DEFAULT_CONFIG,
+  configPath,
+  publicConfig,
+  readSavedConfig,
+  redactSecretText,
+  redactSecrets,
+  resetConfig,
+  resolveConfig,
+  saveConfig,
+  validateConfig,
+} from "./config.js";
+export type { ConfigOverrides, HermesQvacConfig } from "./config.js";
 
 export type HermesQvacProviderProtocol = "openai-compatible";
 
@@ -11,58 +37,43 @@ export interface HermesQvacModelCatalogEntry {
   name: string;
   description: string;
   contextWindowTokens?: number;
+  input?: readonly ("text" | "image")[];
+  downloadBytes?: number;
+  cost?: {
+    input: number;
+    output: number;
+    cacheRead: number;
+    cacheWrite: number;
+  };
 }
 
-export const DEFAULT_QVAC_MODEL_CATALOG: HermesQvacModelCatalogEntry[] = [
-  {
-    id: DEFAULT_QVAC_MODEL,
-    name: "Qwen 3.5 9B",
-    description: "Recommended local QVAC model for Hermes agent workflows.",
-    contextWindowTokens: 32768,
-  },
-  {
-    id: "qwen3.5-4b",
-    name: "Qwen 3.5 4B",
-    description: "Smaller local QVAC model for direct prompts and lighter workflows.",
-    contextWindowTokens: 32768,
-  },
-  {
-    id: "qwen3.5-2b",
-    name: "Qwen 3.5 2B",
-    description: "Fast local QVAC model for lightweight prompts.",
-    contextWindowTokens: 32768,
-  },
-  {
-    id: "qwen3.5-0.8b",
-    name: "Qwen 3.5 0.8B",
-    description: "Smallest friendly local QVAC model option.",
-    contextWindowTokens: 32768,
-  },
-  {
-    id: "qwen3.6-27b",
-    name: "Qwen 3.6 27B",
-    description: "Larger local QVAC model option for higher-quality responses.",
-    contextWindowTokens: 32768,
-  },
-  {
-    id: "qwen3.6-35b-a3b",
-    name: "Qwen 3.6 35B A3B",
-    description: "Large local QVAC model option.",
-    contextWindowTokens: 32768,
-  },
-  {
-    id: "gpt-oss-20b",
-    name: "GPT OSS 20B",
-    description: "Local GPT OSS model exposed by QVAC.",
-    contextWindowTokens: 32768,
-  },
-  {
-    id: "gemma4-31b",
-    name: "Gemma 4 31B",
-    description: "Local Gemma model exposed by QVAC.",
-    contextWindowTokens: 32768,
-  },
-];
+export const DEFAULT_QVAC_MODEL_CATALOG: readonly HermesQvacModelCatalogEntry[] =
+  Object.freeze(
+    qvacCatalog.map((entry) =>
+      Object.freeze({
+        id: entry.id,
+        name: entry.name,
+        description:
+          entry.id === DEFAULT_QVAC_MODEL
+            ? "Recommended local QVAC model for Hermes agent workflows."
+            : "Local model from the official QVAC catalog.",
+        contextWindowTokens: 32768,
+        input: Object.freeze(
+          entry.constant.includes("MULTIMODAL")
+            ? (["text", "image"] as const)
+            : (["text"] as const),
+        ),
+        downloadBytes: allModels.find((model) => model.name === entry.constant)
+          ?.expectedSize,
+        cost: Object.freeze({
+          input: 0,
+          output: 0,
+          cacheRead: 0,
+          cacheWrite: 0,
+        }),
+      }),
+    ),
+  );
 
 export interface HermesQvacProviderOptions {
   /**
@@ -130,6 +141,10 @@ export interface QvacServerDetectionOptions {
    * Optional fetch implementation for runtimes or tests that need to inject one.
    */
   fetch?: typeof fetch;
+  /** Optional Bearer marker for authenticated endpoints. */
+  apiKey?: string;
+  /** Require this model to be advertised by the endpoint. */
+  model?: string;
 }
 
 export type QvacServerDetectionResult =
@@ -163,15 +178,22 @@ export function createQvacOpenAIConfig(
 export function createHermesQvacProvider(
   options: HermesQvacProviderOptions = {},
 ): HermesQvacProvider {
-  const models = (options.models ?? DEFAULT_QVAC_MODEL_CATALOG).map((model) => ({
-    ...model,
-  }));
+  const models = (options.models ?? DEFAULT_QVAC_MODEL_CATALOG).map(
+    (model) => ({
+      ...model,
+      ...(model.input ? { input: [...model.input] } : {}),
+      ...(model.cost ? { cost: { ...model.cost } } : {}),
+    }),
+  );
 
   return {
     id: "qvac",
     name: "QVAC Local",
     protocol: "openai-compatible",
-    defaultModel: options.model ?? models[0]?.id ?? DEFAULT_QVAC_MODEL,
+    defaultModel:
+      options.model ??
+      (options.models ? models[0]?.id : DEFAULT_QVAC_MODEL) ??
+      DEFAULT_QVAC_MODEL,
     models,
     capabilities: {
       streaming: options.streaming ?? true,
@@ -183,14 +205,13 @@ export function createHermesQvacProvider(
 export const hermesQvacProvider = createHermesQvacProvider();
 
 export function createQvacServerUnavailableMessage(baseURL: string): string {
-  return `QVAC local server is not reachable at ${baseURL}. Start the QVAC local server, or pass a different baseURL if it is running elsewhere. This package does not install or start QVAC automatically.`;
+  return `QVAC is not healthy at ${baseURL}. Use 'hermes-qvac doctor' for diagnostics, 'hermes-qvac run' for managed QVAC, or configure a healthy external base URL.`;
 }
 
 export async function detectQvacServer(
   options: QvacServerDetectionOptions = {},
 ): Promise<QvacServerDetectionResult> {
   const baseURL = options.baseURL ?? DEFAULT_QVAC_OPENAI_BASE_URL;
-  const modelsURL = `${baseURL.replace(/\/$/, "")}/models`;
   const timeoutMs = options.timeoutMs ?? DEFAULT_QVAC_SERVER_TIMEOUT_MS;
   const fetchImpl = options.fetch ?? globalThis.fetch;
 
@@ -203,20 +224,20 @@ export async function detectQvacServer(
     };
   }
 
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), timeoutMs);
-
   try {
-    const response = await fetchImpl(modelsURL, {
-      method: "GET",
-      headers: { accept: "application/json" },
-      signal: controller.signal,
-    });
+    const models = await endpointModels(
+      baseURL,
+      timeoutMs,
+      options.apiKey,
+      fetchImpl,
+    );
+    if (options.model && !models.includes(options.model))
+      throw new Error(`endpoint does not advertise model '${options.model}'`);
 
     return {
       reachable: true,
       baseURL,
-      status: response.status,
+      status: 200,
     };
   } catch (cause) {
     return {
@@ -225,8 +246,6 @@ export async function detectQvacServer(
       errorMessage: createQvacServerUnavailableMessage(baseURL),
       cause,
     };
-  } finally {
-    clearTimeout(timeout);
   }
 }
 

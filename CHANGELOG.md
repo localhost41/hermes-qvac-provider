@@ -2,7 +2,20 @@
 
 ## Unreleased
 
-- No unreleased changes.
+- Add the `hermes-qvac` lifecycle CLI with setup, layered config, managed and external runs, foreground serve controls, diagnostics, and exact-response smoke tests.
+- Use the official QVAC catalog and managed provider to generate all eight friendly model aliases, preload Hermes' main and auxiliary models, and preserve upstream reuse and cleanup behavior.
+- Add atomic ownership-aware install/upgrade/uninstall behavior and isolated Hermes enablement/profile verification.
+- Add fake-QVAC lifecycle, port-collision, cleanup, status/stop, fake-Hermes environment/signal, real-Hermes transport, and installed-tarball tests.
+- Add Linux Node 20–26 and macOS CI coverage plus scheduled current-QVAC compatibility checks.
+- Document configuration, architecture, resource safety, host limitations, and evidence-based OpenClaw parity.
+- Harden hostile-state and endpoint handling with bounded parsing, strict session schemas, corrupt-record isolation, recursive secret redaction, subprocess/output limits, and authenticated control health.
+- Make setup transactional and serialized, including enablement rollback, interrupted-backup recovery, payload-hashed ownership markers, symlink refusal, and disable-before-delete uninstall safety.
+- Harden release-candidate behavior with explicit-only saved configuration, dead-owner lock recovery, exact published-legacy hashes, unexpected-file preservation, symlinked control-directory refusal, process-group cleanup, auxiliary endpoint verification, strict `pong`, and captured-secret redaction.
+- Isolate each Vitest run under a private temporary root and remove it during global teardown.
+- Add command-specific help, version, config path/validation, model inspection, human diagnostics, exact Hermes exit propagation, and official SDK-constant normalization.
+- Expand the release-candidate evidence with requirements traceability, a threat/failure model, test inventory, compatibility/security guidance, adverse real-Hermes transport verification, and packed-product command coverage.
+- Accept server-advertised custom model aliases for external endpoints while keeping managed QVAC runs restricted to the official catalog.
+- Add release metadata verification and record the macOS clean-room, live-inference, concurrency, tool-use, and known-limitation evidence.
 
 ## v0.1.0-alpha.3 - 2026-07-19
 

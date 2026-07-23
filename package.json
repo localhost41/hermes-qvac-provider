@@ -1,6 +1,6 @@
 {
   "name": "@localhost41/hermes-qvac-provider",
-  "version": "0.1.0-alpha.3",
+  "version": "0.1.0-alpha.4",
   "description": "Hermes Agent model-provider plugin for private, local QVAC models",
   "keywords": [
     "qvac",
@@ -23,6 +23,9 @@
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "bin": {
+    "hermes-qvac": "dist/cli.js"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -39,6 +42,7 @@
     "scripts",
     "plugin.yaml",
     "README.md",
+    "CONTRIBUTING.md",
     "CHANGELOG.md",
     "LICENSE"
   ],
@@ -46,19 +50,30 @@
     "access": "public"
   },
   "engines": {
-    "node": ">=22 <27"
+    "node": ">=20 <27"
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "prepack": "npm run build",
     "demo": "pnpm build && node examples/hermes-qvac-demo.mjs",
-    "test": "vitest run",
+    "test": "pnpm build && vitest run",
     "test:python": "python3 -m unittest discover -s tests -p 'test_*.py'",
-    "lint": "tsc -p tsconfig.json --noEmit",
-    "verify:package": "bash scripts/verify-package.sh"
+    "lint": "tsc -p tsconfig.json --noEmit && prettier --check 'src/**/*.ts' 'test/**/*.ts' '*.json' '.github/**/*.yml'",
+    "format": "prettier --write 'src/**/*.ts' 'test/**/*.ts' '*.json' '.github/**/*.yml'",
+    "verify:package": "bash scripts/verify-package.sh",
+    "verify:metadata": "node scripts/verify-metadata.mjs",
+    "verify:hermes": "node scripts/verify-real-hermes.mjs",
+    "smoke:transport": "node dist/cli.js smoke --transport-only"
+  },
+  "dependencies": {
+    "@ai-sdk/openai-compatible": "^2.0.0",
+    "@qvac/ai-sdk-provider": "^0.3.0",
+    "@qvac/cli": "^0.8.1",
+    "ai": "^6.0.0"
   },
   "devDependencies": {
     "@types/node": "^26.0.0",
+    "prettier": "^3.9.6",
     "typescript": "^5.9.0",
     "vitest": "^4.0.0"
   },

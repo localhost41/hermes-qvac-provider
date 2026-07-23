@@ -61,6 +61,7 @@ describe("createHermesQvacProvider", () => {
         name: "Custom Local",
         description: "User-provided QVAC-compatible model.",
         contextWindowTokens: 8192,
+        cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
       },
     ];
 
@@ -96,19 +97,30 @@ describe("createHermesQvacProvider", () => {
   });
 
   it("allows streaming support to be disabled for non-streaming QVAC paths", () => {
-    expect(createHermesQvacProvider({ streaming: false }).capabilities).toEqual({
-      streaming: false,
-    });
+    expect(createHermesQvacProvider({ streaming: false }).capabilities).toEqual(
+      {
+        streaming: false,
+      },
+    );
   });
 
   it("exports a ready-to-use default provider", () => {
     expect(hermesQvacProvider).toEqual(createHermesQvacProvider());
   });
+
+  it("does not share nested mutable catalog state with callers", () => {
+    const provider = createHermesQvacProvider();
+    (provider.models[0]!.input as ("text" | "image")[])[0] = "image";
+    provider.models[0]!.cost!.input = 42;
+    expect(DEFAULT_QVAC_MODEL_CATALOG[0]!.input![0]).toBe("text");
+    expect(DEFAULT_QVAC_MODEL_CATALOG[0]!.cost!.input).toBe(0);
+  });
 });
 
 describe("detectQvacServer", () => {
   it("reports the configured QVAC server reachable when it responds", async () => {
-    const fetchMock = async () => new Response("{}", { status: 404 });
+    const fetchMock = async () =>
+      new Response('{"data":[{"id":"qwen3.5-9b"}]}', { status: 200 });
 
     await expect(
       detectQvacServer({
@@ -118,7 +130,7 @@ describe("detectQvacServer", () => {
     ).resolves.toEqual({
       reachable: true,
       baseURL: "http://127.0.0.1:11434/v1",
-      status: 404,
+      status: 200,
     });
   });
 
@@ -137,7 +149,7 @@ describe("detectQvacServer", () => {
       reachable: false,
       baseURL: "http://127.0.0.1:11434/v1",
       errorMessage:
-        "QVAC local server is not reachable at http://127.0.0.1:11434/v1. Start the QVAC local server, or pass a different baseURL if it is running elsewhere. This package does not install or start QVAC automatically.",
+        "QVAC is not healthy at http://127.0.0.1:11434/v1. Use 'hermes-qvac doctor' for diagnostics, 'hermes-qvac run' for managed QVAC, or configure a healthy external base URL.",
       cause: failure,
     });
   });
@@ -152,19 +164,49 @@ describe("detectQvacServer", () => {
         baseURL: "http://127.0.0.1:11434/v1",
         fetch: fetchMock,
       }),
-    ).rejects.toThrow(createQvacServerUnavailableMessage("http://127.0.0.1:11434/v1"));
+    ).rejects.toThrow(
+      createQvacServerUnavailableMessage("http://127.0.0.1:11434/v1"),
+    );
   });
 
   it("uses the OpenAI-compatible models endpoint as the health check", async () => {
     let requestedURL = "";
     const fetchMock = async (url: string | URL | Request) => {
       requestedURL = String(url);
-      return new Response("{}", { status: 200 });
+      return new Response('{"data":[{"id":"qwen3.5-9b"}]}', { status: 200 });
     };
 
     await detectQvacServer({ fetch: fetchMock });
 
     expect(DEFAULT_QVAC_MODELS_URL).toBe("http://127.0.0.1:11434/v1/models");
     expect(requestedURL).toBe(DEFAULT_QVAC_MODELS_URL);
+  });
+
+  it("authenticates probes and requires an advertised selected model", async () => {
+    let authorization = "";
+    let redirect: RequestRedirect | undefined;
+    const fetchMock = async (
+      _url: string | URL | Request,
+      init?: RequestInit,
+    ) => {
+      authorization = new Headers(init?.headers).get("authorization") ?? "";
+      redirect = init?.redirect;
+      return new Response('{"data":[{"id":"another-model"}]}', {
+        status: 200,
+      });
+    };
+
+    const result = await detectQvacServer({
+      fetch: fetchMock,
+      apiKey: "private-marker",
+      model: DEFAULT_QVAC_MODEL,
+    });
+
+    expect(authorization).toBe("Bearer private-marker");
+    expect(redirect).toBe("error");
+    expect(result.reachable).toBe(false);
+    if (!result.reachable) {
+      expect(String(result.cause)).toContain(DEFAULT_QVAC_MODEL);
+    }
   });
 });
