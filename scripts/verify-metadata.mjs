@@ -9,7 +9,7 @@ const changelog = readFileSync("CHANGELOG.md", "utf8");
 const compatibility = readFileSync("docs/compatibility.md", "utf8");
 const configuration = readFileSync("docs/configuration.md", "utf8");
 const releaseReadiness = readFileSync(
-  "docs/release-readiness-2026-07-22.md",
+  "docs/alpha5-release-readiness.md",
   "utf8",
 );
 const pythonProvider = readFileSync("qvac_provider/__init__.py", "utf8");
@@ -59,7 +59,9 @@ const defaults = {
   contextWindow: Number(yamlScalar(manifest, "context_window")),
 };
 if (!qvacCatalog.some((entry) => entry.id === defaults.model)) {
-  throw new Error(`default model is absent from official catalog: ${defaults.model}`);
+  throw new Error(
+    `default model is absent from official catalog: ${defaults.model}`,
+  );
 }
 if (!qvacCatalog.some((entry) => entry.id === defaults.auxModel)) {
   throw new Error(

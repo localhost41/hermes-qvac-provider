@@ -3,6 +3,7 @@ import {
   mkdtemp,
   mkdir,
   readFile,
+  realpath,
   rename,
   stat,
   symlink,
@@ -20,6 +21,7 @@ import {
   doctor,
   endpointModels,
   estimatedPreloadBytes,
+  modelStoragePreflight,
   installPlugin,
   listModels,
   pluginDir,
@@ -98,6 +100,27 @@ describe("official QVAC catalog", () => {
     ).toBe(532_517_120 + 1_280_835_840);
   });
 
+  it("fails disk preflight before a cold model download can exhaust storage", async () => {
+    const home = await mkdtemp(join(tmpdir(), "hermes-qvac-storage-"));
+    await expect(
+      modelStoragePreflight(
+        { model: "qwen3.5-0.8b", auxModel: "qwen3.5-2b" },
+        { HOME: home },
+        1024 ** 3,
+      ),
+    ).rejects.toThrow("Insufficient disk");
+    await expect(
+      modelStoragePreflight(
+        { model: "qwen3.5-0.8b", auxModel: "qwen3.5-2b" },
+        { HOME: home },
+        10 * 1024 ** 3,
+      ),
+    ).resolves.toMatchObject({
+      requiredDownloadBytes: 532_517_120 + 1_280_835_840,
+      safetyBytes: 2 * 1024 ** 3,
+    });
+  });
+
   it("exposes exact official ordering and expected sizes for every catalog entry", () => {
     expect(
       Object.fromEntries(
@@ -114,6 +137,19 @@ describe("official QVAC catalog", () => {
       "gemma4-31b": 19_598_488_192,
     });
   });
+
+  it("separates protocol smoke capability from verified agent-tool capability", () => {
+    expect(
+      listModels().find((model) => model.id === "qwen3.5-0.8b"),
+    ).toMatchObject({
+      experience: { tier: "smoke-chat", tools: "unsupported" },
+    });
+    expect(
+      listModels().find((model) => model.id === "qwen3.5-9b"),
+    ).toMatchObject({
+      experience: { tier: "agent-candidate", tools: "outcome-verified" },
+    });
+  });
 });
 
 describe("Hermes plugin installation", () => {
@@ -127,7 +163,7 @@ describe("Hermes plugin installation", () => {
     await mkdir(source);
     await writeFile(
       hermes,
-      `#!/usr/bin/env bash\nif [[ "$1" == "--version" ]]; then printf "Hermes Agent v0.19.0\\nInstall directory: ${source}\\n"; else printf "enabled qvac 0.1.0-alpha.4 copied\\n"; fi\n`,
+      `#!/usr/bin/env bash\nif [[ "$1" == "--version" ]]; then printf "Hermes Agent v0.19.0\\nInstall directory: ${source}\\n"; else printf "enabled qvac 0.1.0-alpha.5 copied\\n"; fi\n`,
       { mode: 0o755 },
     );
     const profile = {
@@ -412,6 +448,27 @@ describe("transport fixture", () => {
       code: 124,
       stderr: expect.stringContaining("timed out"),
     });
+  });
+
+  it("runs Hermes in the configured working directory", async () => {
+    const bin = await mkdtemp(join(tmpdir(), "hermes-qvac-cwd-bin-"));
+    const cwd = await mkdtemp(join(tmpdir(), "hermes-qvac-cwd-target-"));
+    const hermes = join(bin, "hermes");
+    await writeFile(
+      hermes,
+      '#!/usr/bin/env node\nprocess.stdout.write(process.cwd() + "\\n");\n',
+      { mode: 0o755 },
+    );
+    await chmod(hermes, 0o755);
+    await expect(
+      runHermesCaptured(
+        "http://127.0.0.1:1/v1",
+        "qwen3.5-9b",
+        [],
+        { ...DEFAULT_CONFIG, cwd },
+        { PATH: `${bin}:${process.env.PATH ?? ""}` },
+      ),
+    ).resolves.toMatchObject({ code: 0, stdout: `${await realpath(cwd)}\n` });
   });
 
   it("terminates a timed-out Hermes process group including descendants", async () => {

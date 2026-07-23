@@ -34,7 +34,7 @@ describe("configuration", () => {
       ctxSize: 32768,
       reasoningBudget: -1,
       tools: true,
-      readyTimeoutMs: 180000,
+      readyTimeoutMs: 900000,
       timeoutSeconds: 300,
     });
   });
@@ -276,6 +276,33 @@ describe("CLI parsing", () => {
   it("supports conventional top-level help and version flags", () => {
     expect(parseArgs(["--help"]).command).toBe("help");
     expect(parseArgs(["--version"]).command).toBe("version");
+  });
+
+  it("parses the status-only running requirement", () => {
+    expect(parseArgs(["status", "--require-running", "--json"])).toMatchObject({
+      command: "status",
+      requireRunning: true,
+      json: true,
+    });
+  });
+
+  it("requires an isolated non-reused directory for outcome-verified tool smoke", async () => {
+    await expect(main(["smoke", "--tool-task", "--yes"])).resolves.toBe(2);
+    expect(
+      parseArgs([
+        "smoke",
+        "--tool-task",
+        "--cwd",
+        "/tmp/tool-proof",
+        "--no-reuse",
+        "--yes",
+      ]),
+    ).toMatchObject({
+      command: "smoke",
+      toolTask: true,
+      yes: true,
+      config: { cwd: "/tmp/tool-proof", reuse: false },
+    });
   });
 
   it("returns the documented usage code for invalid command shapes", async () => {

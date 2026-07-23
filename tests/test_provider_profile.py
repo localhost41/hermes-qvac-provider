@@ -328,7 +328,7 @@ class ProviderProfileTest(unittest.TestCase):
                 "host": "127.0.0.1",
                 "port": 11434,
                 "cwd": "",
-                "readyTimeoutMs": 180000,
+                "readyTimeoutMs": 900000,
                 "idleStopMs": 0,
                 "timeoutSeconds": 300,
                 "healthCheckPath": "/v1/models",

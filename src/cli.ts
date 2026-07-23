@@ -35,6 +35,9 @@ import {
   writeServeState,
 } from "./runtime.js";
 import { realpathSync } from "node:fs";
+import { access, readFile } from "node:fs/promises";
+import { constants } from "node:fs";
+import { join } from "node:path";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 
@@ -46,6 +49,8 @@ interface ParsedArgs {
   yes: boolean;
   transportOnly: boolean;
   external: boolean;
+  requireRunning: boolean;
+  toolTask: boolean;
   config: ConfigOverrides;
 }
 
@@ -90,6 +95,8 @@ export function parseArgs(argv: string[]): ParsedArgs {
     yes: false,
     transportOnly: false,
     external: false,
+    requireRunning: false,
+    toolTask: false,
     config: {},
   };
   for (let index = 1; index < ownArgs.length; index += 1) {
@@ -106,8 +113,16 @@ export function parseArgs(argv: string[]): ParsedArgs {
       result.transportOnly = true;
       continue;
     }
+    if (arg === "--tool-task") {
+      result.toolTask = true;
+      continue;
+    }
     if (arg === "--external") {
       result.external = true;
+      continue;
+    }
+    if (arg === "--require-running") {
+      result.requireRunning = true;
       continue;
     }
     if (arg === "--tools") {
@@ -164,10 +179,10 @@ function usage(command?: string): string {
     serve:
       "Usage: hermes-qvac serve [configuration options] [--json]\n\nHold an official managed QVAC consumer in the foreground until signaled or stopped through authenticated session control.",
     status:
-      "Usage: hermes-qvac status [configuration options] [--json]\n\nReport valid, stale, and invalid local session state plus endpoint diagnostics.",
+      "Usage: hermes-qvac status [configuration options] [--require-running] [--json]\n\nReport explicit stopped/ready/degraded/failed lifecycle state. A healthy stopped managed installation succeeds unless --require-running is set.",
     stop: "Usage: hermes-qvac stop [--json]\n\nRequest authenticated shutdown from registered hermes-qvac owners; never signal recorded PIDs directly.",
     smoke:
-      "Usage: hermes-qvac smoke --transport-only [configuration options] [--json]\n       hermes-qvac smoke [configuration options] --yes [--json]\n\nRun a no-download real-Hermes transport test or an explicitly consented physical inference test.",
+      "Usage: hermes-qvac smoke --transport-only [configuration options] [--json]\n       hermes-qvac smoke [configuration options] --yes [--json]\n       hermes-qvac smoke --tool-task --cwd EMPTY_DIR --no-reuse [configuration options] --yes [--json]\n\nRun transport, physical inference, or outcome-verified file-tool tests. Tool-task success requires the requested file and exact content, not the model's claim.",
     uninstall:
       "Usage: hermes-qvac uninstall [--json]\n\nDisable and remove only an installation carrying a valid ownership marker. Saved configuration is preserved.",
     version: "Usage: hermes-qvac version [--json]",
@@ -191,10 +206,12 @@ Options:
   --ctx-size TOKENS          QVAC context size (32768)
   --reasoning-budget N       -1 enables reasoning; 0 disables it
   --tools | --no-tools       Toggle QVAC tool-call formatting
-  --ready-timeout-ms MS      Startup/model-download timeout (180000)
+  --tool-task                Verify a real Hermes file-tool side effect
+  --ready-timeout-ms MS      Startup/model-download timeout (900000)
   --idle-stop-ms MS          Shared serve idle lifetime (0)
   --timeout-seconds SEC      Hermes request timeout (300)
   --reuse | --no-reuse       Share a matching managed QVAC serve
+  --require-running           Make status fail unless an endpoint is ready
   --json                     Structured output
   --                         Remaining arguments are passed to Hermes
 
@@ -311,6 +328,14 @@ function validateInvocation(parsed: ParsedArgs): void {
     throw new TypeError("--yes is valid only with smoke");
   if (parsed.external && parsed.command !== "run" && parsed.command !== "smoke")
     throw new TypeError("--external is valid only with run or smoke");
+  if (parsed.toolTask && parsed.command !== "smoke")
+    throw new TypeError("--tool-task is valid only with smoke");
+  if (parsed.toolTask && parsed.transportOnly)
+    throw new TypeError("--tool-task cannot be combined with --transport-only");
+  if (parsed.toolTask && (!parsed.config.cwd || parsed.config.reuse !== false))
+    throw new TypeError(
+      "--tool-task requires --cwd EMPTY_DIR and --no-reuse so the verified side effect is isolated",
+    );
   if (
     hasConfigOverrides(parsed.config) &&
     !["setup", "config", "doctor", "run", "serve", "smoke", "status"].includes(
@@ -320,6 +345,36 @@ function validateInvocation(parsed: ParsedArgs): void {
     throw new TypeError(
       `${parsed.command} does not accept configuration options`,
     );
+  }
+}
+
+const TOOL_PROOF_FILE = "qvac-proof.txt";
+const TOOL_PROOF_CONTENT = "QVAC-HERMES-OK";
+
+async function assertFreshToolWorkspace(
+  config: HermesQvacConfig,
+): Promise<void> {
+  if (!config.cwd) throw new TypeError("tool-task requires cwd");
+  const proof = join(config.cwd, TOOL_PROOF_FILE);
+  try {
+    await access(proof, constants.F_OK);
+    throw new TypeError(
+      `Refusing tool-task because ${proof} already exists; use an empty disposable directory`,
+    );
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+  }
+}
+
+async function toolOutcomeVerified(config: HermesQvacConfig): Promise<boolean> {
+  if (!config.cwd) return false;
+  try {
+    return (
+      (await readFile(join(config.cwd, TOOL_PROOF_FILE), "utf8")).trim() ===
+      TOOL_PROOF_CONTENT
+    );
+  } catch {
+    return false;
   }
 }
 
@@ -511,7 +566,7 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
         out.write(
           parsed.json
             ? { ok: true, model }
-            : `${model.id}\n  Name: ${model.name}\n  SDK constant: ${model.constant}\n  Modality: ${model.constant.includes("MULTIMODAL") ? "text, image" : "text"}\n  Download: ${formatBytes(model.downloadBytes)}\n  Default: ${model.default ? "yes" : "no"}`,
+            : `${model.id}\n  Name: ${model.name}\n  SDK constant: ${model.constant}\n  Modality: ${model.constant.includes("MULTIMODAL") ? "text, image" : "text"}\n  Download: ${formatBytes(model.downloadBytes)}\n  Default: ${model.default ? "yes" : "no"}\n  Experience: ${model.experience.tier}\n  Tools: ${model.experience.tools}\n  Guidance: ${model.experience.guidance}`,
         );
         return EXIT.ok;
       }
@@ -521,7 +576,7 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
           : models
               .map(
                 (m) =>
-                  `${m.default ? "*" : " "} ${m.id}\t${m.name}\t${formatBytes(m.downloadBytes)}\t${m.constant}`,
+                  `${m.default ? "*" : " "} ${m.id}\t${m.name}\t${formatBytes(m.downloadBytes)}\t${m.experience.tier}\ttools:${m.experience.tools}`,
               )
               .join("\n"),
       );
@@ -543,10 +598,42 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
           ? { ...config, baseURL: live.baseURL }
           : config,
       );
+      const staleCount = sessions.filter((session) => !session.running).length;
+      const state =
+        inventory.issues.length > 0
+          ? "failed"
+          : staleCount > 0
+            ? "degraded"
+            : live
+              ? health.ok
+                ? "ready"
+                : "degraded"
+              : config.baseURL !== undefined
+                ? health.ok
+                  ? "ready"
+                  : "failed"
+                : health.ok
+                  ? "stopped"
+                  : "failed";
+      const installed =
+        health.checks.find((check) => check.name === "plugin")?.ok === true;
+      const endpointCheck = health.checks.find(
+        (check) => check.name === "endpoint",
+      );
+      const running = state === "ready";
       const ok =
-        health.ok && (config.baseURL !== undefined || live !== undefined);
+        (state === "ready" || state === "stopped") &&
+        (!parsed.requireRunning || running);
       const result = {
         ok,
+        installed,
+        state,
+        running,
+        requireRunning: parsed.requireRunning,
+        endpoint: {
+          reachable: endpointCheck?.ok === true,
+          expected: config.baseURL !== undefined || live !== undefined,
+        },
         sessions: sessions.map(publicServeState),
         invalidStateFiles: inventory.issues,
         health,
@@ -554,7 +641,7 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
       out.write(
         parsed.json
           ? result
-          : `${sessions.length} valid session(s), ${sessions.filter((session) => session.running).length} live, ${inventory.issues.length} invalid state file(s)\n${formatDoctor(health)}`,
+          : `State: ${state}${parsed.requireRunning ? " (running required)" : ""}\n${sessions.length} valid session(s), ${sessions.filter((session) => session.running).length} live, ${inventory.issues.length} invalid state file(s)\n${formatDoctor(health)}`,
       );
       return ok ? EXIT.ok : EXIT.unavailable;
     }
@@ -612,11 +699,17 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
     }
     if (command === "run" || command === "serve" || command === "smoke") {
       const config = (effectiveConfig = await resolveConfig(parsed.config));
+      if (parsed.toolTask) await assertFreshToolWorkspace(config);
       if (command === "smoke" && !parsed.yes && !config.baseURL) {
         throw new Error(physicalDownloadConsentMessage(config));
       }
-      const hermesArgs =
-        command === "smoke"
+      const hermesArgs = parsed.toolTask
+        ? [
+            "-z",
+            `Create a file named ${TOOL_PROOF_FILE} containing exactly ${TOOL_PROOF_CONTENT}, then reply exactly DONE. Do not claim success unless the tool completed successfully.`,
+            "--ignore-rules",
+          ]
+        : command === "smoke"
           ? ["-z", "Reply with exactly pong.", "--ignore-user-config", "--cli"]
           : parsed.hermesArgs;
       if (parsed.external || config.baseURL) {
@@ -630,13 +723,19 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
           command === "smoke",
         );
         if (typeof result === "number") return result;
-        const passed = result.code === 0 && result.stdout.trim() === "pong";
+        const sideEffectVerified = parsed.toolTask
+          ? await toolOutcomeVerified(config)
+          : undefined;
+        const passed = parsed.toolTask
+          ? result.code === 0 && sideEffectVerified === true
+          : result.code === 0 && result.stdout.trim() === "pong";
         const smokeResult = {
           ok: passed,
           event: "result",
           mode: "physical-external",
           hermesExitCode: result.code,
           response: redactSecretText(result.stdout.trim(), [config.apiKey]),
+          ...(parsed.toolTask ? { sideEffectVerified } : {}),
           ...(passed
             ? {}
             : {
@@ -647,7 +746,9 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
           parsed.json
             ? smokeResult
             : passed
-              ? "External physical smoke passed: Hermes returned exactly pong."
+              ? parsed.toolTask
+                ? "External tool smoke passed: Hermes created the verified proof file."
+                : "External physical smoke passed: Hermes returned exactly pong."
               : `External physical smoke failed (Hermes exit ${result.code}): ${redactSecretText((result.stderr || result.stdout).trim(), [config.apiKey])}`,
         );
         return passed ? EXIT.ok : EXIT.failed;
@@ -715,13 +816,19 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
             config,
             { HERMES_MAX_TOKENS: "256" },
           );
-          const passed = result.code === 0 && result.stdout.trim() === "pong";
+          const sideEffectVerified = parsed.toolTask
+            ? await toolOutcomeVerified(config)
+            : undefined;
+          const passed = parsed.toolTask
+            ? result.code === 0 && sideEffectVerified === true
+            : result.code === 0 && result.stdout.trim() === "pong";
           const smokeResult = {
             ok: passed,
             event: "result",
             mode: "physical-managed",
             hermesExitCode: result.code,
             response: redactSecretText(result.stdout.trim(), [config.apiKey]),
+            ...(parsed.toolTask ? { sideEffectVerified } : {}),
             ...(passed
               ? {}
               : {
@@ -734,7 +841,9 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
             parsed.json
               ? smokeResult
               : passed
-                ? "Managed physical smoke passed: Hermes returned exactly pong."
+                ? parsed.toolTask
+                  ? "Managed tool smoke passed: Hermes created the verified proof file."
+                  : "Managed physical smoke passed: Hermes returned exactly pong."
                 : `Managed physical smoke failed (Hermes exit ${result.code}): ${redactSecretText((result.stderr || result.stdout).trim(), [config.apiKey])}`,
           );
           return passed ? EXIT.ok : EXIT.failed;

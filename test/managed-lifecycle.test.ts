@@ -665,7 +665,7 @@ printf '{"class":"QvacProviderProfile","provider_profile":true,"name":"qvac","al
 if [[ "$1" == "--version" ]]; then
   printf 'Hermes Agent test\nInstall directory: ${fakeInstall}\n'
 elif [[ "$1 $2" == "plugins list" ]]; then
-  echo 'enabled user 0.1.0-alpha.4 qvac'
+  echo 'enabled user 0.1.0-alpha.5 qvac'
 else
   exit 0
 fi
@@ -712,6 +712,8 @@ fi
       `serve exitCode=${cli.exitCode} status=${status.stdout}`,
     ).toMatchObject({
       ok: true,
+      state: "ready",
+      running: true,
       sessions: [{ running: true, model: "qwen3.5-9b" }],
     });
     const stop = spawnSync(
@@ -725,5 +727,31 @@ fi
     await expect(access(statePath)).rejects.toThrow();
     const qvacPid = Number(await readFile(`${fake.capture}.pid`, "utf8"));
     await waitForExit(qvacPid);
+    const stopped = spawnSync(
+      process.execPath,
+      [resolve("dist/cli.js"), "status", "--json"],
+      { cwd: resolve("."), env, encoding: "utf8" },
+    );
+    expect(stopped.status, stopped.stderr).toBe(0);
+    expect(JSON.parse(stopped.stdout)).toMatchObject({
+      ok: true,
+      installed: true,
+      state: "stopped",
+      running: false,
+      endpoint: { reachable: false, expected: false },
+      sessions: [],
+    });
+    const requireRunning = spawnSync(
+      process.execPath,
+      [resolve("dist/cli.js"), "status", "--require-running", "--json"],
+      { cwd: resolve("."), env, encoding: "utf8" },
+    );
+    expect(requireRunning.status).toBe(3);
+    expect(JSON.parse(requireRunning.stdout)).toMatchObject({
+      ok: false,
+      state: "stopped",
+      running: false,
+      requireRunning: true,
+    });
   }, 20_000);
 });

@@ -58,7 +58,7 @@ export const DEFAULT_CONFIG: Readonly<HermesQvacConfig> = Object.freeze({
   ctxSize: 32768,
   reasoningBudget: -1,
   tools: true,
-  readyTimeoutMs: 180_000,
+  readyTimeoutMs: 900_000,
   idleStopMs: 0,
   timeoutSeconds: 300,
   reuse: true,

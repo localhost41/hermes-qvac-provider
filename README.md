@@ -96,9 +96,21 @@ See [configuration.md](docs/configuration.md) for every CLI option and environme
 - Reasoning budget: `-1` (enabled)
 - QVAC tool-call formatting: enabled
 - Bind: `127.0.0.1`, automatic free port
-- Startup timeout: 180 seconds
+- Startup/model-download timeout: 900 seconds
 - Hermes request timeout: 300 seconds
 - API marker: `custom-local`
+
+The marker satisfies OpenAI-compatible clients but does not enable authentication on a managed QVAC 0.8.1 server. Managed QVAC remains loopback-only. Use a separately managed authenticated endpoint when bearer enforcement is required; the current official managed-provider API does not expose QVAC CLI's `--api-key` server option.
+
+`hermes-qvac status` treats a healthy stopped managed installation as success and reports `state: "stopped"`. Monitoring that requires a live endpoint should use `hermes-qvac status --require-running`.
+
+Model guidance from `hermes-qvac models` separates transport smoke from agent-tool capability. Verify a concrete file-tool outcome in an empty disposable directory with:
+
+```bash
+hermes-qvac smoke --tool-task --cwd /tmp/hermes-qvac-tool-check --no-reuse --yes --json
+```
+
+This gate checks the file and exact content; a model saying it succeeded is not sufficient.
 
 Run `hermes-qvac models` for the authoritative model list and SDK mappings. The list comes directly from `@qvac/ai-sdk-provider/models`.
 

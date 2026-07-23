@@ -9,13 +9,13 @@ Precedence is CLI option, environment variable, saved configuration, then defaul
 | Host | `--host` | `QVAC_HOST` | `127.0.0.1` | Only `127.0.0.1` and `localhost` are accepted. |
 | Port | `--port` | `QVAC_PORT` | automatic | Pin only when another process is not using it. |
 | Existing endpoint | `--base-url` | `QVAC_BASE_URL` | unset | HTTP(S), no embedded credentials/query/fragment, path ending in `/v1`. Selects external mode. |
-| API marker | `--api-key` | `QVAC_API_KEY` | `custom-local` | Sent as Bearer auth; redacted when non-default. |
+| API marker | `--api-key` | `QVAC_API_KEY` | `custom-local` | Sent as a Bearer marker and redacted when non-default. Managed QVAC 0.8.1 does not enforce it because the official managed-provider API does not expose the CLI's server-auth option. |
 | QVAC executable | `--bin` | `QVAC_BIN` | bundled `@qvac/cli` | Absolute path recommended. |
 | Working directory | `--cwd` | `QVAC_CWD` | current directory | Requires `--no-reuse` because upstream fleet identity does not include cwd. |
 | Context | `--ctx-size` | `QVAC_CTX_SIZE` | `32768` | Positive integer, applied to every catalog entry. |
 | Reasoning | `--reasoning-budget` | `QVAC_REASONING_BUDGET` | `-1` | `-1` enables reasoning; `0` disables it. |
 | Tool formatting | `--tools` / `--no-tools` | `QVAC_TOOLS` | `true` | Applied in QVAC serve model config. |
-| Startup timeout | `--ready-timeout-ms` | `QVAC_READY_TIMEOUT_MS` | `180000` | Includes cold model preload/download time. |
+| Startup timeout | `--ready-timeout-ms` | `QVAC_READY_TIMEOUT_MS` | `900000` | Includes cold model preload/download time. Cache-aware disk preflight requires missing artifact bytes plus a 2 GiB safety margin. |
 | Idle cleanup | `--idle-stop-ms` | `QVAC_IDLE_STOP_MS` | `0` | Time after the last upstream consumer detaches. |
 | Request timeout | `--timeout-seconds` | `QVAC_TIMEOUT_SECONDS` | `300` | Passed to the Hermes child as `HERMES_API_TIMEOUT`. An explicit Hermes `providers.qvac.*.timeout_seconds` setting takes precedence inside Hermes. |
 | Fleet reuse | `--reuse` / `--no-reuse` | `QVAC_REUSE` | `true` | Matching official managed-provider fleets can be shared. |

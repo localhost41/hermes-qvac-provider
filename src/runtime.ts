@@ -11,6 +11,7 @@ import {
   rename,
   rm,
   stat,
+  statfs,
   writeFile,
 } from "node:fs/promises";
 import { constants } from "node:fs";
@@ -1234,6 +1235,32 @@ export function listModels() {
     downloadBytes: allModels.find((entry) => entry.name === model.constant)
       ?.expectedSize,
     default: model.id === DEFAULT_MODEL,
+    experience:
+      model.id === "qwen3.5-0.8b"
+        ? {
+            tier: "smoke-chat",
+            tools: "unsupported",
+            guidance:
+              "Use for transport smoke and basic chat, not agent tools.",
+          }
+        : model.id === "qwen3.5-2b" || model.id === "qwen3.5-4b"
+          ? {
+              tier: "chat",
+              tools: "experimental",
+              guidance: "Use outcome verification for every tool task.",
+            }
+          : model.id === "qwen3.5-9b"
+            ? {
+                tier: "agent-candidate",
+                tools: "outcome-verified",
+                guidance:
+                  "Recommended agent candidate; validate concrete side effects with smoke --tool-task.",
+              }
+            : {
+                tier: "untested",
+                tools: "untested",
+                guidance: "No local agent-quality claim has been established.",
+              },
   }));
 }
 
@@ -1253,6 +1280,57 @@ export function estimatedPreloadBytes(
     total += size;
   }
   return total;
+}
+
+export async function modelStoragePreflight(
+  config: Pick<HermesQvacConfig, "model" | "auxModel">,
+  env: NodeJS.ProcessEnv = process.env,
+  freeBytesOverride?: number,
+): Promise<{
+  requiredDownloadBytes: number;
+  freeBytes: number;
+  safetyBytes: number;
+}> {
+  const constants = new Set([
+    resolveModelConstant(config.model),
+    resolveModelConstant(config.auxModel),
+  ]);
+  const modelDirectory = join(env.HOME?.trim() || homedir(), ".qvac", "models");
+  let cachedFiles: string[] = [];
+  try {
+    cachedFiles = await readdir(modelDirectory);
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+  }
+  let requiredDownloadBytes = 0;
+  for (const constant of constants) {
+    const metadata = allModels.find((entry) => entry.name === constant);
+    if (!metadata || typeof metadata.expectedSize !== "number") continue;
+    const candidate = cachedFiles.find((file) =>
+      file.endsWith(`_${metadata.modelId}`),
+    );
+    let cachedBytes = 0;
+    if (candidate) {
+      try {
+        cachedBytes = Math.min(
+          metadata.expectedSize,
+          (await stat(join(modelDirectory, candidate))).size,
+        );
+      } catch {
+        cachedBytes = 0;
+      }
+    }
+    requiredDownloadBytes += metadata.expectedSize - cachedBytes;
+  }
+  const filesystem = await statfs(env.HOME?.trim() || homedir());
+  const freeBytes =
+    freeBytesOverride ?? Number(filesystem.bavail) * Number(filesystem.bsize);
+  const safetyBytes = 2 * 1024 ** 3;
+  if (freeBytes < requiredDownloadBytes + safetyBytes)
+    throw new Error(
+      `Insufficient disk for QVAC preload: ${(freeBytes / 1024 ** 3).toFixed(2)} GiB free, ${(requiredDownloadBytes / 1024 ** 3).toFixed(2)} GiB still required for selected artifacts, plus a 2.00 GiB safety margin`,
+    );
+  return { requiredDownloadBytes, freeBytes, safetyBytes };
 }
 
 export function createManagedModels(
@@ -1324,22 +1402,33 @@ export async function startManaged(
 async function startManagedSerialized(
   config: HermesQvacConfig,
 ): Promise<ManagedQvacProvider> {
+  await modelStoragePreflight(config);
   if (config.port !== undefined)
     await assertPortAvailable(config.host, config.port);
   const previousCwd = process.cwd();
   if (config.cwd) process.chdir(config.cwd);
   try {
-    const provider = await createQvac({
-      mode: "managed",
-      models: createManagedModels(config),
-      serveHost: config.host,
-      ...(config.port === undefined ? {} : { servePort: config.port }),
-      serveStartTimeout: config.readyTimeoutMs,
-      ...(config.qvacBin === undefined ? {} : { serveBinPath: config.qvacBin }),
-      reuse: config.reuse,
-      serveIdleTimeout: config.idleStopMs,
-      apiKey: config.apiKey,
-    });
+    let provider: ManagedQvacProvider;
+    try {
+      provider = await createQvac({
+        mode: "managed",
+        models: createManagedModels(config),
+        serveHost: config.host,
+        ...(config.port === undefined ? {} : { servePort: config.port }),
+        serveStartTimeout: config.readyTimeoutMs,
+        ...(config.qvacBin === undefined
+          ? {}
+          : { serveBinPath: config.qvacBin }),
+        reuse: config.reuse,
+        serveIdleTimeout: config.idleStopMs,
+        apiKey: config.apiKey,
+      });
+    } catch (error) {
+      throw new Error(
+        `QVAC did not become ready within ${(config.readyTimeoutMs / 60_000).toFixed(1)} minute(s) while downloading or loading '${config.model}' and '${config.auxModel}'. Partial downloads are resumable; retry with more time using --ready-timeout-ms. ${error instanceof Error ? error.message : String(error)}`,
+        { cause: error },
+      );
+    }
     try {
       const models = await endpointModels(
         provider.baseURL,
@@ -1445,7 +1534,8 @@ export function runHermes(
   baseURL: string,
   model: string,
   extraArgs: string[] = [],
-  config: Pick<HermesQvacConfig, "apiKey" | "timeoutSeconds"> = {
+  config: Pick<HermesQvacConfig, "apiKey" | "timeoutSeconds"> &
+    Partial<Pick<HermesQvacConfig, "cwd">> = {
     apiKey: "custom-local",
     timeoutSeconds: 300,
   },
@@ -1458,6 +1548,7 @@ export function runHermes(
       {
         stdio: "inherit",
         env: hermesEnvironment(baseURL, config, env),
+        ...(config.cwd ? { cwd: config.cwd } : {}),
         detached: process.platform !== "win32",
       },
     );
@@ -1494,7 +1585,8 @@ export function runHermesCaptured(
   baseURL: string,
   model: string,
   extraArgs: string[],
-  config: Pick<HermesQvacConfig, "apiKey" | "timeoutSeconds"> = {
+  config: Pick<HermesQvacConfig, "apiKey" | "timeoutSeconds"> &
+    Partial<Pick<HermesQvacConfig, "cwd">> = {
     apiKey: "custom-local",
     timeoutSeconds: 300,
   },
@@ -1513,6 +1605,7 @@ export function runHermesCaptured(
       {
         stdio: ["ignore", "pipe", "pipe"],
         env: hermesEnvironment(baseURL, config, env),
+        ...(config.cwd ? { cwd: config.cwd } : {}),
         detached: process.platform !== "win32",
       },
     );

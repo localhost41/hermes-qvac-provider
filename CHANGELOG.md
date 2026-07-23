@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Prepare alpha.5 with explicit lifecycle states: a healthy stopped installation succeeds, while `status --require-running` supports monitoring.
+- Propagate `--cwd` to the Hermes child and add outcome-verified physical tool smoke that requires the exact filesystem side effect.
+- Add evidence-based model experience tiers so transport-smoke models are not presented as verified agent-tool models.
+- Raise cold-start readiness to 15 minutes, add cache-aware disk preflight with a 2 GiB safety margin, and make timeout failures distinguish download/load readiness with resumable retry guidance.
+- Clarify that the default API marker is not managed-server authentication and record the missing official managed-provider server-auth option without forking the QVAC supervisor.
+
 - Add the `hermes-qvac` lifecycle CLI with setup, layered config, managed and external runs, foreground serve controls, diagnostics, and exact-response smoke tests.
 - Use the official QVAC catalog and managed provider to generate all eight friendly model aliases, preload Hermes' main and auxiliary models, and preserve upstream reuse and cleanup behavior.
 - Add atomic ownership-aware install/upgrade/uninstall behavior and isolated Hermes enablement/profile verification.
