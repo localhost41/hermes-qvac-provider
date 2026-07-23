@@ -43,3 +43,9 @@ hidden with a plugin response shim.
 
 The structured-output case was not rerun in this pass. Its status remains a
 tracked upstream limitation rather than an inferred result.
+
+On 2026-07-23 the beta-gate rerun used QVAC 0.8.1, cached Qwen3.5 0.8B,
+`ctx_size=2048`, disabled reasoning/tools, and a bounded isolated managed server.
+All eight required protocol cases passed. The #3384 stream exceeded the
+10-second probe bound, and the #3225 response contained incomplete JSON. Both
+remain known-upstream failures; the server then stopped cleanly on SIGINT.

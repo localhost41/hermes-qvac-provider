@@ -86,11 +86,17 @@ describe("QVAC OpenAI conformance", () => {
       model: "qvac-test",
       apiKey: secret,
       expectAuth: true,
+      includeKnownFailures: true,
+      contextProbeWords: 1,
       timeoutMs: 2_000,
     });
 
     expect(result.ok).toBe(true);
-    expect(result.summary).toMatchObject({ pass: 10, fail: 0 });
+    expect(result.summary).toMatchObject({
+      pass: 11,
+      fail: 0,
+      knownUpstreamFailure: 1,
+    });
     expect(result.cases).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -105,6 +111,8 @@ describe("QVAC OpenAI conformance", () => {
         }),
       ]),
     );
+    const names = result.cases.map((entry) => entry.name);
+    expect(new Set(names).size).toBe(names.length);
     expect(JSON.stringify(result)).not.toContain(secret);
   });
 });

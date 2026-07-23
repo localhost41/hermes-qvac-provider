@@ -222,10 +222,12 @@ export async function runQvacConformance(options) {
   skip('structured JSON terminal state (#3225)', 'destructive known-failure case requires --include-known-failures', 'known-upstream');
 
   if (options.includeKnownFailures) {
-    const existing = new Map(cases.map((entry, index) => [entry.name, index]));
-    for (const name of ['context boundary (#3384)', 'structured JSON terminal state (#3225)']) {
-      const index = existing.get(name);
-      if (index !== undefined) cases.splice(index, 1);
+    const knownProbeNames = new Set([
+      'context boundary (#3384)',
+      'structured JSON terminal state (#3225)',
+    ]);
+    for (let index = cases.length - 1; index >= 0; index -= 1) {
+      if (knownProbeNames.has(cases[index].name)) cases.splice(index, 1);
     }
     await record('context boundary (#3384)', async () => {
       const prompt = 'x '.repeat(options.contextProbeWords ?? 20_000);
