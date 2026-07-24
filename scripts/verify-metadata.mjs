@@ -9,7 +9,7 @@ const changelog = readFileSync("CHANGELOG.md", "utf8");
 const compatibility = readFileSync("docs/compatibility.md", "utf8");
 const configuration = readFileSync("docs/configuration.md", "utf8");
 const releaseReadiness = readFileSync(
-  "docs/alpha5-release-readiness.md",
+  "docs/beta1-release-readiness.md",
   "utf8",
 );
 const betaReadiness = readFileSync("docs/beta-readiness-plan.md", "utf8");
@@ -29,8 +29,8 @@ if (manifestVersion !== packageJson.version) {
     `version mismatch: package.json=${packageJson.version}, plugin.yaml=${manifestVersion ?? "missing"}`,
   );
 }
-if (!readme.includes(`${packageJson.name}@alpha`)) {
-  throw new Error(`README does not install ${packageJson.name}@alpha`);
+if (!readme.includes(`${packageJson.name}@beta`)) {
+  throw new Error(`README does not install ${packageJson.name}@beta`);
 }
 if (!/^## Unreleased\s*$/m.test(changelog)) {
   throw new Error("CHANGELOG.md has no Unreleased section");

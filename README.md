@@ -20,7 +20,7 @@ The npm package includes the official `@qvac/cli`. A separate global `qvac` inst
 After installing the package:
 
 ```bash
-npm install -g @localhost41/hermes-qvac-provider@alpha
+npm install -g @localhost41/hermes-qvac-provider@beta
 hermes-qvac setup
 hermes-qvac doctor
 ```
