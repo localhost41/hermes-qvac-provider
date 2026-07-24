@@ -28,10 +28,17 @@ components and has SHA-256
 The final tarball checksum is recorded only after user-facing payload files are
 frozen, avoiding a self-referential checksum inside the artifact.
 
-The protected publish workflow is manual, accepts an explicit ref, targets the
-`npm-publish` environment, requires an alpha version, publishes with npm trusted
-publishing/provenance, and uses the `alpha` dist-tag. It has no stable publish
-path and does not modify `latest`.
+`artifacts/beta1.cdx.json` repeats the isolated installed-tarball process for
+0.1.0-beta.1. It contains 272 components and has SHA-256
+`e058827a3b778b9cc97fc2ec9ca09d6c164c5831cc0ef889bdb3dd6d85cbec97`.
+The beta tarball contains 25 files, is 48,734 bytes packed, and has SHA-256
+`e00c545209d6ee2e38f6ea3cb3c7d7c6057a6bcb4ac553d37c8eb744ff24ac63`.
+
+The protected alpha and beta publish workflows are manual, accept an explicit
+ref, target the `npm-publish` environment, require the matching prerelease
+version, publish with npm trusted publishing/provenance, and use only their
+matching prerelease dist-tag. Neither has a stable publish path or modifies
+`latest`.
 
 Repository secret scanning and push protection are enabled. CI and drift
 workflows have read-only repository permission, actions are pinned to exact
