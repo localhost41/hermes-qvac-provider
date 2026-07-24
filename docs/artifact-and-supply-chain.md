@@ -34,11 +34,13 @@ frozen, avoiding a self-referential checksum inside the artifact.
 The beta tarball contains 25 files, is 48,734 bytes packed, and has SHA-256
 `e00c545209d6ee2e38f6ea3cb3c7d7c6057a6bcb4ac553d37c8eb744ff24ac63`.
 
-The protected alpha and beta publish workflows are manual, accept an explicit
-ref, target the `npm-publish` environment, require the matching prerelease
-version, publish with npm trusted publishing/provenance, and use only their
-matching prerelease dist-tag. Neither has a stable publish path or modifies
-`latest`.
+The protected prerelease publish workflow is manual, accepts an explicit ref,
+targets the `npm-publish` environment, requires an alpha or beta version,
+publishes with npm trusted publishing/provenance, and derives the matching
+prerelease dist-tag from the package version. It has no stable publish path and
+does not modify `latest`. The workflow remains at the npm trusted publisher's
+registered `publish-alpha.yml` path so both prerelease channels share the same
+reviewed publisher identity.
 
 Repository secret scanning and push protection are enabled. CI and drift
 workflows have read-only repository permission, actions are pinned to exact
