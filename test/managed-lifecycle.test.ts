@@ -263,7 +263,7 @@ describe("official managed lifecycle integration", () => {
         reuse: false,
         readyTimeoutMs: 3_000,
       }),
-    ).rejects.toThrow("auxiliary model");
+    ).rejects.toThrow("missing 'qwen3.5-2b'");
     const pid = Number(await readFile(`${fake.capture}.pid`, "utf8"));
     await waitForExit(pid);
   }, 15_000);

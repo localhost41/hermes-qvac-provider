@@ -1057,6 +1057,40 @@ export async function endpointModels(
   return models;
 }
 
+export async function waitForEndpointModels(
+  baseURL: string,
+  requiredModels: string[],
+  timeoutMs: number,
+  apiKey?: string,
+  fetchImpl: typeof fetch = fetch,
+  sleepImpl: (delayMs: number) => Promise<void> = (delayMs) =>
+    new Promise((resolvePromise) => setTimeout(resolvePromise, delayMs)),
+): Promise<string[]> {
+  const deadline = Date.now() + timeoutMs;
+  let lastDetail = "the endpoint did not respond";
+  while (Date.now() < deadline) {
+    const remaining = deadline - Date.now();
+    try {
+      const models = await endpointModels(
+        baseURL,
+        Math.max(1, Math.min(5_000, remaining)),
+        apiKey,
+        fetchImpl,
+      );
+      const missing = requiredModels.filter((model) => !models.includes(model));
+      if (missing.length === 0) return models;
+      lastDetail = `missing ${missing.map((model) => `'${model}'`).join(", ")}`;
+    } catch (error) {
+      lastDetail = error instanceof Error ? error.message : String(error);
+    }
+    const delay = Math.min(500, deadline - Date.now());
+    if (delay > 0) await sleepImpl(delay);
+  }
+  throw new Error(
+    `models endpoint did not advertise required models within ${timeoutMs}ms: ${lastDetail}`,
+  );
+}
+
 function bundledQvacVersion(): string | null {
   try {
     const entry = createRequire(import.meta.url).resolve("@qvac/cli");
@@ -1430,19 +1464,12 @@ async function startManagedSerialized(
       );
     }
     try {
-      const models = await endpointModels(
+      await waitForEndpointModels(
         provider.baseURL,
-        Math.min(config.readyTimeoutMs, 10_000),
+        [...new Set([config.model, config.auxModel])],
+        config.readyTimeoutMs,
         config.apiKey,
       );
-      if (!models.includes(config.model))
-        throw new Error(
-          `Managed QVAC endpoint ${provider.baseURL} does not advertise selected model '${config.model}'`,
-        );
-      if (!models.includes(config.auxModel))
-        throw new Error(
-          `Managed QVAC endpoint ${provider.baseURL} does not advertise auxiliary model '${config.auxModel}'`,
-        );
       return provider;
     } catch (error) {
       await provider.close();

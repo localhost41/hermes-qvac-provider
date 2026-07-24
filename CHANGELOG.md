@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Wait for cold managed servers to advertise every selected model instead of failing when the HTTP listener becomes ready before model download/load.
+- Override QVAC CLI's transitive `find-my-way` router to patched 9.7.0 after GHSA-c96f-x56v-gq3h began flagging 9.6.0.
+- Add consent-gated physical Linux inference and mandatory packed Hermes 0.19 transport gates for beta qualification.
 - Prepare alpha.5 with explicit lifecycle states: a healthy stopped installation succeeds, while `status --require-running` supports monitoring.
 - Propagate `--cwd` to the Hermes child and add outcome-verified physical tool smoke that requires the exact filesystem side effect.
 - Add evidence-based model experience tiers so transport-smoke models are not presented as verified agent-tool models.

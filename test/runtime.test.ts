@@ -20,6 +20,7 @@ import {
   createSessionControl,
   doctor,
   endpointModels,
+  waitForEndpointModels,
   estimatedPreloadBytes,
   modelStoragePreflight,
   installPlugin,
@@ -424,6 +425,30 @@ describe("transport fixture", () => {
     await expect(
       endpointModels("http://127.0.0.1:1/v1", 100, undefined, invalid),
     ).rejects.toThrow("invalid model id");
+  });
+
+  it("waits for a cold managed endpoint to advertise every required model", async () => {
+    let attempts = 0;
+    const fetchImpl = async () => {
+      attempts += 1;
+      return new Response(
+        attempts === 1
+          ? '{"data":[]}'
+          : '{"data":[{"id":"main"},{"id":"aux"}]}',
+        { status: 200, headers: { "content-type": "application/json" } },
+      );
+    };
+    await expect(
+      waitForEndpointModels(
+        "http://127.0.0.1:1/v1",
+        ["main", "aux"],
+        1_000,
+        undefined,
+        fetchImpl,
+        async () => {},
+      ),
+    ).resolves.toEqual(["main", "aux"]);
+    expect(attempts).toBe(2);
   });
 
   it("bounds captured Hermes process duration", async () => {
