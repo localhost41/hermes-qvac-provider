@@ -1,8 +1,8 @@
 id: qvac
 name: qvac
 display_name: QVAC
-version: 0.1.0-alpha.3
-type: model-provider
+version: 0.1.0-beta.1
+kind: model-provider
 entrypoint: qvac_provider
 description: Local-first QVAC models via qvac serve openai
 provider:
@@ -12,8 +12,9 @@ provider:
     - qvac-local
   api_mode: chat_completions
   auth_type: api_key
+  supports_vision: true
   base_url: http://127.0.0.1:11434/v1
-  models_url: http://127.0.0.1:11434/v1/models
+  models_url: ""
   env_vars:
     - QVAC_API_KEY
     - QVAC_BASE_URL
@@ -25,32 +26,37 @@ provider:
 config:
   model:
     default: qwen3.5-9b
+  auxModel:
+    default: qwen3.5-2b
   host:
     default: 127.0.0.1
   port:
-    default: 11434
-  baseUrl:
-    default: http://127.0.0.1:11434/v1
+    default: null
+  baseURL:
+    default: null
   apiKey:
     env: QVAC_API_KEY
     default: custom-local
-  qvacCommand:
-    default: qvac serve openai
+  qvacBin:
+    default: bundled @qvac/cli
   cwd:
     default: ""
   ctxSize:
     default: 32768
   reasoningBudget:
-    default: null
+    default: -1
   tools:
     default: true
   readyTimeoutMs:
-    default: 30000
+    default: 900000
   idleStopMs:
     default: 0
   timeoutSeconds:
-    default: 120
+    default: 300
+  reuse:
+    default: true
 lifecycle:
   managed: false
-  limitation: Hermes model-provider plugins do not currently expose a clean provider-local service lifecycle hook.
+  companionCli: hermes-qvac run
+  limitation: Hermes model-provider plugins are declarative; the companion CLI owns the managed QVAC lifecycle.
   healthCheckPath: /v1/models

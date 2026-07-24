@@ -2,7 +2,33 @@
 
 ## Unreleased
 
-- No unreleased changes.
+- Wait for cold managed servers to advertise every selected model instead of failing when the HTTP listener becomes ready before model download/load.
+- Override QVAC CLI's transitive `find-my-way` router to patched 9.7.0 after GHSA-c96f-x56v-gq3h began flagging 9.6.0.
+- Add consent-gated physical Linux inference and mandatory packed Hermes 0.19 transport gates for beta qualification.
+- Prepare alpha.5 with explicit lifecycle states: a healthy stopped installation succeeds, while `status --require-running` supports monitoring.
+- Propagate `--cwd` to the Hermes child and add outcome-verified physical tool smoke that requires the exact filesystem side effect.
+- Add evidence-based model experience tiers so transport-smoke models are not presented as verified agent-tool models.
+- Raise cold-start readiness to 15 minutes, add cache-aware disk preflight with a 2 GiB safety margin, and make timeout failures distinguish download/load readiness with resumable retry guidance.
+- Clarify that the default API marker is not managed-server authentication and record the missing official managed-provider server-auth option without forking the QVAC supervisor.
+
+- Add the `hermes-qvac` lifecycle CLI with setup, layered config, managed and external runs, foreground serve controls, diagnostics, and exact-response smoke tests.
+- Use the official QVAC catalog and managed provider to generate all eight friendly model aliases, preload Hermes' main and auxiliary models, and preserve upstream reuse and cleanup behavior.
+- Add atomic ownership-aware install/upgrade/uninstall behavior and isolated Hermes enablement/profile verification.
+- Add fake-QVAC lifecycle, port-collision, cleanup, status/stop, fake-Hermes environment/signal, real-Hermes transport, and installed-tarball tests.
+- Add Linux Node 22–26 and macOS CI coverage plus scheduled current-QVAC compatibility checks.
+- Document configuration, architecture, resource safety, host limitations, and evidence-based OpenClaw parity.
+- Harden hostile-state and endpoint handling with bounded parsing, strict session schemas, corrupt-record isolation, recursive secret redaction, subprocess/output limits, and authenticated control health.
+- Make setup transactional and serialized, including enablement rollback, interrupted-backup recovery, payload-hashed ownership markers, symlink refusal, and disable-before-delete uninstall safety.
+- Harden release-candidate behavior with explicit-only saved configuration, dead-owner lock recovery, exact published-legacy hashes, unexpected-file preservation, symlinked control-directory refusal, process-group cleanup, auxiliary endpoint verification, strict `pong`, and captured-secret redaction.
+- Isolate each Vitest run under a private temporary root and remove it during global teardown.
+- Add command-specific help, version, config path/validation, model inspection, human diagnostics, exact Hermes exit propagation, and official SDK-constant normalization.
+- Expand the release-candidate evidence with requirements traceability, a threat/failure model, test inventory, compatibility/security guidance, adverse real-Hermes transport verification, and packed-product command coverage.
+- Accept server-advertised custom model aliases for external endpoints while keeping managed QVAC runs restricted to the official catalog.
+- Add release metadata verification and record the macOS clean-room, live-inference, concurrency, tool-use, and known-limitation evidence.
+- Add bounded QVAC protocol conformance and moderator clean-room acceptance harnesses.
+- Record packed-plugin compatibility with Hermes 0.19.0 and current `main`, plus session-resume and adverse-stream ownership findings.
+- Minimize the npm payload, add reproducible provenance/SBOM gates, pin workflow actions, and add dependency/CodeQL review.
+- Add bounded live request, concurrency, restart, setup, upgrade, uninstall, and reinstall soak evidence.
 
 ## v0.1.0-alpha.3 - 2026-07-19
 
