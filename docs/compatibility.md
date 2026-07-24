@@ -21,3 +21,7 @@ The package engine range is Node `>=22 <27`, matching the current pnpm toolchain
 Every pull request verifies the real provider contract against the supported Hermes 0.19.0 tag and current Hermes main. A separate clean Ubuntu lane installs official Hermes 0.19.0, packs the candidate, and exercises copied setup, discovery, profile loading, doctor, real OpenAI-compatible transport, upgrade, uninstall, and cleanup without using the source checkout at runtime. The weekly/manual compatibility workflow installs the locked project, updates official QVAC packages to their latest versions with `--no-save`, asserts `package.json` did not change, and reruns TypeScript, Python, and packed-consumer verification on Linux and macOS. It also clones current Hermes source and verifies that the packaged profile remains an actual `ProviderProfile`.
 
 This workflow diagnoses compatibility; it never changes dependency constraints, commits files, publishes packages, or downloads a model.
+
+The manual `Beta live Linux` workflow is the only hosted lane permitted to
+download a model. It runs only when its confirmation input exactly matches the
+documented consent phrase. Windows and WSL2 are not tested or claimed.
